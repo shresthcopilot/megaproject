@@ -17,8 +17,13 @@
     }
 
     body {
-      background-color: #f0f4f8;
+      background: linear-gradient(135deg,
+          #edf7ff 0%,
+          #c6e3ff 25%,
+          #86c2ff 60%,
+          #4a90e2 100%);
       min-height: 100vh;
+      background-attachment: fixed;
     }
 
     .navbar {
@@ -122,17 +127,33 @@
     }
 
     .form-container {
-      background: white;
       width: 100%;
       max-width: 900px;
-      border-radius: 15px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      border-radius: 22px;
+      background: linear-gradient(135deg,
+          rgba(255, 255, 255, 0.35),
+          rgba(255, 255, 255, 0.15));
+      backdrop-filter: blur(22px) saturate(160%);
+      -webkit-backdrop-filter: blur(22px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow:
+        0 30px 60px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      position: relative;
       overflow: hidden;
     }
 
+
+
     .form-header {
-      background: linear-gradient(90deg, #5b86e5, #904e95);
-      color: white;
+      background: linear-gradient(135deg,
+          rgba(255, 255, 255, 0.35),
+          rgba(255, 255, 255, 0.15));
+      backdrop-filter: blur(22px) saturate(160%);
+      -webkit-backdrop-filter: blur(22px) saturate(160%);
+      color: rgb(56, 56, 56);
+      border-radius: 10px;
       padding: 25px;
       text-align: center;
     }
@@ -140,6 +161,34 @@
     .form-body {
       padding: 30px;
     }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+
+      background: linear-gradient(135deg,
+          rgba(243, 241, 241, 0.35),
+          rgba(255, 255, 255, 0.15));
+
+      backdrop-filter: blur(22px) saturate(160%);
+      -webkit-backdrop-filter: blur(22px) saturate(160%);
+
+      border: 1px solid rgba(255, 255, 255, 0.4);
+
+      color: #1f2937;
+      font-size: 15px;
+
+      outline: none;
+      position: relative;
+
+      box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+      transition: all 0.3s ease;
+    }
+
 
     .input-grid {
       display: grid;
@@ -175,13 +224,48 @@
     .submit-btn {
       margin-top: 20px;
       width: 100%;
-      padding: 14px;
-      background: linear-gradient(90deg, #00b09b, #96c93d);
-      border: none;
-      color: white;
+      padding: 14px 16px;
+
+      background: linear-gradient(135deg,
+          rgba(255, 255, 255, 0.45),
+          rgba(255, 255, 255, 0.18));
+
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+
+      color: #2c2c2c;
       font-size: 16px;
-      border-radius: 8px;
+      font-weight: 600;
+
       cursor: pointer;
+      position: relative;
+      overflow: hidden;
+
+      box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+      transition: transform 0.3s ease;
+    }
+
+    .submit-btn::before {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      left: -50%;
+
+      background: radial-gradient(circle at 30% 30%,
+          rgba(255, 255, 255, 0.6),
+          transparent 45%);
+
+      animation: liquidFlow 6s linear infinite;
+      opacity: 0.65;
+      pointer-events: none;
     }
 
     .popup {
@@ -243,7 +327,7 @@
         </button>
 
         <div class="profile-menu" id="profileMenu">
-          <a class="profile-menu-item" href="#">View Profile</a>
+          <!-- <a class="profile-menu-item" href="#">View Profile</a> -->
           <a class="profile-menu-item" href="#">Edit Profile</a>
           <a class="profile-menu-item" href="#">Change Password</a>
         </div>
