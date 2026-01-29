@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -23,9 +23,8 @@
     }
 
     .container {
-      background-color: rgba(241, 242, 243, 0.5);
+      background-color: rgba(243, 245, 246, 0.5);
       backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
       padding: 40px 35px;
       border-radius: 15px;
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -46,6 +45,7 @@
       font-weight: 600;
     }
 
+    /* Toggle Buttons */
     .role-toggle {
       display: flex;
       justify-content: space-between;
@@ -73,6 +73,7 @@
       box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
     }
 
+    /* Input boxes */
     .input-box {
       position: relative;
       margin-bottom: 18px;
@@ -98,6 +99,8 @@
       color: #555;
       font-size: 16px;
     }
+
+    /* ---------- CUSTOM DROPDOWN ---------- */
 
     .custom-select {
       width: 84%;
@@ -148,6 +151,7 @@
       font-size: 14px;
     }
 
+    /* Hover color (your color) */
     .custom-select .options li:hover {
       background-color: #1b2d83;
       border-radius: 10px;
@@ -158,6 +162,7 @@
       border-bottom: none;
     }
 
+    /* Login button */
     .login-btn {
       width: 100%;
       padding: 12px;
@@ -178,60 +183,62 @@
 </head>
 
 <body>
+
+
+
   <div class="container">
-    <img src="../images/logo.png" alt="logo" height="50%" width="50%" />
+    <img src="../images/logo.png" alt="logo" height="50%" width="50%">
     <h2>Login</h2>
 
+    <!-- Toggle Buttons -->
     <div class="role-toggle">
       <button id="adminBtn" class="active">Admin</button>
       <button id="facultyBtn">FACULTY</button>
     </div>
 
+    <!-- Username -->
     <div class="input-box">
       <i>👤</i>
-      <input type="text" id="username" placeholder="Username" />
+      <input type="text" id="username" placeholder="Username">
     </div>
 
+    <!-- Password -->
     <div class="input-box">
       <i>🔒</i>
-      <input type="password" id="password" placeholder="Password" />
+      <input type="password" id="password" placeholder="Password">
     </div>
 
+    <!-- Custom Dropdown -->
     <div class="input-box" id="roleBox">
+
       <div class="custom-select" id="customSelect">
         <i>⚙</i>
-        <div class="selected" style="text-align: left">Role</div>
-        <ul class="options" style="text-align: left">
-          <li data-value="faculty" style="text-align: left">faculty</li>
-          <li data-value="vac" style="text-align: left">vac</li>
-          <li data-value="pc" style="text-align: left">pc</li>
+        <div class="selected" style="text-align:left;">Role</div>
+        <ul class="options" style="text-align:left;">
+          <li data-value="faculty" style="text-align:left;">faculty</li>
+          <li data-value="vac" style="text-align:left;">vac</li>
+          <li data-value="pc" style="text-align:left;">pc</li>
           <!-- <li data-value="component" style="text-align:left;">Component Coordinator</li>
           <li data-value="timetable" style="text-align:left;">Timetable Coordinator</li> -->
-          <li data-value="E-content" style="text-align: left">E-content</li>
-          <li data-value="E-capacity" style="text-align: left">E-capacity</li>
-          <li data-value="Teaching-learning" style="text-align: left">
-            Teaching-learning
-          </li>
-          <li data-value="Expreiential" style="text-align: left">
-            Experiential-coordinator
-          </li>
-          <li data-value="Learner_support" style="text-align: left">
-            Learner-support-coordinator
-          </li>
-          <li data-value="Library" style="text-align: left">
-            Library-coordinator-coordinator
-          </li>
+          <li data-value="E-content" style="text-align:left;">E-content</li>
+          <li data-value="E-capacity" style="text-align:left;">E-capacity</li>
+          <li data-value="Teaching-learning" style="text-align:left;">Teaching-learning</li>
+          <li data-value="Expreiential" style="text-align:left;">Experiential-coordinator</li>
+          <li data-value="Learner_support" style="text-align:left;">Learner-support-coordinator</li>
+          <li data-value="Library" style="text-align:left;">Library-coordinator-coordinator</li>
         </ul>
+
       </div>
     </div>
 
+    <!-- Login Button -->
     <button class="login-btn" onclick="login()">login</button>
   </div>
 
   <script>
-    const adminBtn = document.getElementById("adminBtn");
-    const facultyBtn = document.getElementById("facultyBtn");
-    const roleBox = document.getElementById("roleBox");
+    const adminBtn = document.getElementById('adminBtn');
+    const facultyBtn = document.getElementById('facultyBtn');
+    const roleBox = document.getElementById('roleBox');
     const customSelect = document.getElementById("customSelect");
     const selected = customSelect.querySelector(".selected");
     const optionList = customSelect.querySelector(".options");
@@ -240,29 +247,32 @@
     const credentials = {
       username: document.getElementById("username").value,
       password: document.getElementById("password").value,
-      role: document.getElementById("roleBox").value, // faculty, pc, vac, admin
+      role: document.getElementById("roleBox").value // faculty, pc, vac, admin
     };
 
-    roleBox.style.display = "none";
 
-    adminBtn.addEventListener("click", () => {
-      adminBtn.classList.add("active");
-      facultyBtn.classList.remove("active");
-      roleBox.style.display = "none";
+    // Hide role box for admin
+    roleBox.style.display = 'none';
+
+    adminBtn.addEventListener('click', () => {
+      adminBtn.classList.add('active');
+      facultyBtn.classList.remove('active');
+      roleBox.style.display = 'none';
     });
 
-    facultyBtn.addEventListener("click", () => {
-      facultyBtn.classList.add("active");
-      adminBtn.classList.remove("active");
-      roleBox.style.display = "block";
+    facultyBtn.addEventListener('click', () => {
+      facultyBtn.classList.add('active');
+      adminBtn.classList.remove('active');
+      roleBox.style.display = 'block';
     });
 
+    // Custom Select JS
     selected.addEventListener("click", () => {
       optionList.style.display =
         optionList.style.display === "block" ? "none" : "block";
     });
 
-    options.forEach((option) => {
+    options.forEach(option => {
       option.addEventListener("click", () => {
         selected.textContent = option.textContent;
         selected.setAttribute("data-value", option.dataset.value);
@@ -277,9 +287,9 @@
     });
 
     async function login() {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const isAdmin = adminBtn.classList.contains("active");
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const isAdmin = adminBtn.classList.contains('active');
       const selectedRole = selected.dataset.value; // use dataset.value
 
       const role = isAdmin ? "admin" : selectedRole;
@@ -298,7 +308,7 @@
         const res = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password, role }),
+          body: JSON.stringify({ username, password, role })
         });
 
         const data = await res.json();
@@ -309,27 +319,33 @@
         }
 
         // store token and role for authenticated requests
-        const userRole = data.user?.role || "";
         if (data.token) {
-          try {
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("userRole", userRole);
-            localStorage.setItem("username", data.user?.username || "");
-          } catch (e) { }
+          try { localStorage.setItem('token', data.token); localStorage.setItem('userRole', data.role || ''); localStorage.setItem('username', data.user || ''); } catch (e) { /* ignore */ }
         }
 
-        if (userRole === "admin")
-          window.location.href = "admindashboard.html";
-        else if (userRole === "pc") window.location.href = "PC-form.html";
-        else if (userRole === "vac") window.location.href = "VAC-Link.html";
-        else if (userRole === "faculty") window.location.href = "index.html";
-        else alert("Unknown role returned: " + userRole);
+        if (data.role === "admin") window.location.href = "admindashboard.html";
+        else if (data.role === "pc") window.location.href = "PC-form.html";
+        else if (data.role === "vac") window.location.href = "VAC-Link.html";
+        else if (data.role === "faculty") window.location.href = "faculty.html";
+        else if (data.role === "E-content") window.location.href = "E-content-form.html";
+        else if (data.role === "E-capacity") window.location.href = "E-capacity_dev-form.html";
+        else if (data.role === "Teaching-learning") window.location.href = "Teaching_learning-form.html";
+        else if (data.role === "Expreiential") window.location.href = "Experiential-form.html";
+        else if (data.role === "Learner_support") window.location.href = "Learner_support-form.html";
+        else if (data.role === "Library") window.location.href = "Library-form.html";
+        else alert("Unknown role returned");
+
       } catch (err) {
         console.error(err);
         alert("Server error. Is your Node.js backend running?");
       }
     }
+
+
   </script>
+
+  <h2>Hello world</h2>
+
 </body>
 
 </html>
