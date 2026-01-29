@@ -1,7 +1,5 @@
-.env
+.env 
 /node_modules
-/dist
-/build
-.DS_Store
 /package-lock.json
 /package.json
+/images
