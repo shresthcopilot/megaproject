@@ -40,16 +40,19 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-
 app.use("/api/auth", authRoutes);
-app.use("/api/vac", vacRoutes);
-app.use("/api/pc", pcRoutes);
-app.use("/api/econtent", econtentRoutes);
-app.use("/api/capacity", capacityRoutes);
-app.use("/api/teaching", teachingRoutes);
-app.use("/api/experiential", experientialRoutes);
-app.use("/api/library", libraryRoutes);
-app.use("/api/learner-support", learnerRoutes);
+
+import { pageAuthMiddleware} from "./middleware/pageAuthMiddleware.js";
+
+
+app.use("/api/vac", pageAuthMiddleware, vacRoutes);
+app.use("/api/pc", pageAuthMiddleware, pcRoutes);
+app.use("/api/econtent", pageAuthMiddleware, econtentRoutes);
+app.use("/api/capacity", pageAuthMiddleware, capacityRoutes);
+app.use("/api/teaching", pageAuthMiddleware, teachingRoutes);
+app.use("/api/experiential", pageAuthMiddleware, experientialRoutes);
+app.use("/api/library", pageAuthMiddleware, libraryRoutes);
+app.use("/api/learner-support", pageAuthMiddleware, learnerRoutes);
 
 // DB status endpoint
 app.get("/api/db/status", async (req, res) => {

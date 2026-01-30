@@ -1,0 +1,41 @@
+[33m6388b18[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Initial commit - ERP project
+[33m90112a1[m untrack node_modules, images, package files
+[33m0fd4e68[m remove .env from git tracking
+[33m066c97b[m  .gitignore contain some hidden files
+[33m4b1edf1[m hide or not
+[33me154e65[m  hide files
+[33maeadef5[m  hide important details
+[33m084a087[m  prince code add
+[33mcbcaed9[m Small change
+[33m0597b48[m Update index.html
+[33m7671a3a[m hide env files
+[33ma7413be[m  .env file is hide
+[33mcf6ce50[m Redesign admin dashboard with modern UI and UX
+[33mff7954e[m Recorrect
+[33m81faa0e[m BABA update
+[33m951e775[m update
+[33m8680d64[m Merge branch 'main' of https://github.com/babu2551/Mega_project_ERP
+[33mc18aa2e[m  package unhide or public
+[33mefee7f6[m Merge branch 'main' of https://github.com/babu2551/Mega_project_ERP
+[33m4dbca85[m Update index.html
+[33m1e103e7[m  .env here
+[33m89da494[m  public env
+[33m9c4a9e1[m UI Change
+[33m48b10d0[m Refactor code structure for improved readability and maintainability
+[33m75444f0[m Font size change and login bakground image
+[33m4c1e29b[m middleware small change
+[33m7fede58[m modifie the code and add image in navbar
+[33m3199e49[m navbar added in every form
+[33m9a3bf4a[m I want to only check if pull request send successful or not
+[33ma91bb2f[m commit
+[33me31e9a0[m  Modifie routes
+[33mc004886[m  program id option add and multer middleware some change in routes
+[33m0a6b015[m  Add program id option and add middlewares
+[33mf9bae3e[m  change the file name in public forlder
+[33m5891c98[m  html form formate changing
+[33m2182cf9[m Samll change in formatting in models
+[33m17bfaf4[m small changes
+[33m8b2625a[m  some routes delete for make new routes
+[33ma83d12a[m  Add healthcare  -> Middleware, Utils, Controller, Validators, routes
+[33m5361dc3[m Second commit
+[33m8da0737[m Task 1 complete
