@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         required: true,
+        lowercase: true,
         enum: ["faculty", "pc", "vac", "admin", "e-content", "e-capacity", "teaching-learning", "experiential", "learner-support", "library"]
     },
 });

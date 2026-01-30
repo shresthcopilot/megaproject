@@ -4,7 +4,12 @@ import bcrypt from "bcryptjs";
 
 export const login = async (req, res) => {
     try {
-        const { username, password, role } = req.body;
+        let { username, password, role } = req.body;
+
+        // ✅ FIX: role ko normalize karo (IMPORTANT)
+        if (role) {
+            role = role.toLowerCase();
+        }
 
         // 1. Validate input
         if (!username || !password || !role) {

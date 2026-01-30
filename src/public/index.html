@@ -10,7 +10,7 @@
       width: 100%;
       margin: 0;
       padding: 0;
-      background-image: url('../images/image.png');
+      background-image: url('../images/WhatsApp\ Image\ 2026-01-21\ at\ 18.17.04.jpeg');
       background-size: cover;
       background-repeat: no-repeat;
       background-position: center;
@@ -25,7 +25,7 @@
     .container {
       background-color: rgba(241, 242, 243, 0.5);
       backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(2px);
       padding: 40px 35px;
       border-radius: 15px;
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -216,17 +216,16 @@
         <i>⚙</i>
         <div class="selected" style="text-align:left;">Role</div>
         <ul class="options" style="text-align:left;">
-          <li data-value="faculty" style="text-align:left;">faculty</li>
-          <li data-value="vac" style="text-align:left;">vac</li>
-          <li data-value="pc" style="text-align:left;">pc</li>
-          <!-- <li data-value="component" style="text-align:left;">Component Coordinator</li>
-          <li data-value="timetable" style="text-align:left;">Timetable Coordinator</li> -->
-          <li data-value="E-content" style="text-align:left;">E-content</li>
-          <li data-value="E-capacity" style="text-align:left;">E-capacity</li>
-          <li data-value="Teaching-learning" style="text-align:left;">Teaching-learning</li>
-          <li data-value="Expreiential" style="text-align:left;">Experiential-coordinator</li>
-          <li data-value="Learner_support" style="text-align:left;">Learner-support-coordinator</li>
-          <li data-value="Library" style="text-align:left;">Library-coordinator-coordinator</li>
+          <li data-value="faculty">faculty</li>
+          <li data-value="vac">vac</li>
+          <li data-value="pc">pc</li>
+          <li data-value="e-content">e-content</li>
+          <li data-value="e-capacity">e-capacity</li>
+          <li data-value="teaching-learning">teaching-learning</li>
+          <li data-value="experiential">experiential</li>
+          <li data-value="learner-support">learner-support</li>
+          <li data-value="library">library</li>
+
         </ul>
 
       </div>
@@ -328,13 +327,14 @@
         else if (data.role === "pc") window.location.href = "PC-form.html";
         else if (data.role === "vac") window.location.href = "VAC-Link.html";
         else if (data.role === "faculty") window.location.href = "faculty.html";
-        else if (data.role === "E-content") window.location.href = "E-content-form.html";
-        else if (data.role === "E-capacity") window.location.href = "E-capacity_dev-form.html";
-        else if (data.role === "Teaching-learning") window.location.href = "Teaching_learning-form.html";
-        else if (data.role === "Expreiential") window.location.href = "Experiential-form.html";
-        else if (data.role === "Learner_support") window.location.href = "Learner_support-form.html";
-        else if (data.role === "Library") window.location.href = "Library-form.html";
+        else if (data.role === "e-content") window.location.href = "E-content-form.html";
+        else if (data.role === "e-capacity") window.location.href = "E-capacity_dev-form.html";
+        else if (data.role === "teaching-learning") window.location.href = "Teaching_learning-form.html";
+        else if (data.role === "experiential") window.location.href = "Experiential-form.html";
+        else if (data.role === "learner-support") window.location.href = "Learner_support-form.html";
+        else if (data.role === "library") window.location.href = "Library-form.html";
         else alert("Unknown role returned");
+
 
       } catch (err) {
         console.error(err);

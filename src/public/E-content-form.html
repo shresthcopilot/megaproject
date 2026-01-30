@@ -399,6 +399,10 @@
 
     document.onclick = () => profileMenu.classList.remove("active");
 
+    document.getElementsByClassName("logoutBtn").onclick = () => {
+      window.location.href = "index.html"; 
+    };
+
     const popup = document.getElementById("popup");
     const form = document.getElementById("econtentForm");
 
