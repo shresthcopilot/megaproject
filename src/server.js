@@ -43,6 +43,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 
 import { pageAuthMiddleware} from "./middleware/pageAuthMiddleware.js";
+app.use("/api/register", pageAuthMiddleware, authRoutes);
 
 
 app.use("/api/vac", pageAuthMiddleware, vacRoutes);

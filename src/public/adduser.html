@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>User Registration</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: url('../images/WhatsApp\ Image\ 2026-01-21\ at\ 18.17.04.jpeg') center/cover no-repeat fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(6px);
+  padding: 30px 25px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.container img {
+  width: 110px;
+  margin-bottom: 10px;
+}
+
+h2 {
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+/* INPUTS */
+.input-box {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.input-box input {
+  width: 100%;
+  padding: 12px 14px 12px 38px;
+  border-radius: 10px;
+  border: none;
+  background: #f2f2f2;
+  font-size: 14px;
+  outline: none;
+}
+
+.input-box span {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* CUSTOM SELECT */
+.custom-select {
+  width: 100%;
+  background: #f2f2f2;
+  padding: 12px 14px 12px 38px;
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  text-align: left;
+}
+
+.custom-select::after {
+  content: "▼";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+}
+
+.options {
+  position: absolute;
+  top: 115%;
+  left: 0;
+  width: 100%;
+  background: white;
+  border-radius: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: none;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  z-index: 99;
+}
+
+.options li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.options li:hover {
+  background: #1b2d83;
+  color: white;
+}
+
+/* BUTTON */
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #1b2d83;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #142161;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* MOBILE */
+@media (max-width: 420px) {
+  .container {
+    padding: 25px 18px;
+  }
+  h2 {
+    font-size: 20px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<img src="../images/logo.png" alt="Logo">
+<h2>User Registration</h2>
+
+<form id="registerForm">
+
+<div class="input-box">
+<span>👤</span>
+<input type="text" id="username" placeholder="Username" required minlength="3">
+</div>
+
+<div class="input-box">
+<span>🔒</span>
+<input type="password" id="password" placeholder="Password" required minlength="5">
+</div>
+
+<div class="input-box">
+<div class="custom-select" id="customSelect">
+<span style="position:absolute;left:12px;">⚙</span>
+<div class="selected">Select Role</div>
+<ul class="options">
+<li data-value="faculty">Faculty</li>
+<li data-value="vac">VAC</li>
+<li data-value="pc">Pogram coodinator</li>
+<li data-value="e-content">E-Content</li>
+<li data-value="library">Library</li>
+</ul>
+</div>
+</div>
+
+<button type="submit" id="submitBtn">Register</button>
+
+</form>
+</div>
+
+<script>
+const form = document.getElementById("registerForm");
+const btn = document.getElementById("submitBtn");
+
+const customSelect = document.getElementById("customSelect");
+const selected = customSelect.querySelector(".selected");
+const optionList = customSelect.querySelector(".options");
+const options = optionList.querySelectorAll("li");
+
+// dropdown toggle
+selected.addEventListener("click", () => {
+  optionList.style.display =
+    optionList.style.display === "block" ? "none" : "block";
+});
+
+// select option
+options.forEach(opt => {
+  opt.addEventListener("click", () => {
+    selected.textContent = opt.textContent;
+    selected.dataset.value = opt.dataset.value;
+    optionList.style.display = "none";
+  });
+});
+
+// close outside
+document.addEventListener("click", e => {
+  if (!customSelect.contains(e.target)) optionList.style.display = "none";
+});
+
+// submit
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const role = selected.dataset.value;
+
+  if (!role) return alert("Select a role");
+
+  btn.disabled = true;
+  btn.textContent = "Registering...";
+
+  try {
+    const res = await fetch("/api/register", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ username, password, role })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || "Failed");
+
+    alert("Registration Successful");
+    window.location.href = "admindashboard.html";
+
+  } catch (err) {
+    alert(err.message || "Server error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Register";
+  }
+});
+</script>
+
+</body>
+</html>
