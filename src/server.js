@@ -16,6 +16,8 @@ import libraryRoutes from "./routes/library.js";
 import learnerRoutes from "./routes/learner-support.js";
 import { errorHandler, notFoundHandler } from "./middleware/index.js";
 
+
+
 import Student from "./models/vac-form-model.js";
 import VacEntry from "./models/vac-model.js";
 
@@ -54,6 +56,7 @@ app.use("/api/teaching", pageAuthMiddleware, teachingRoutes);
 app.use("/api/experiential", pageAuthMiddleware, experientialRoutes);
 app.use("/api/library", pageAuthMiddleware, libraryRoutes);
 app.use("/api/learner-support", pageAuthMiddleware, learnerRoutes);
+
 
 // DB status endpoint
 app.get("/api/db/status", async (req, res) => {

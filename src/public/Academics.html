@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Academics Reports</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 16px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 640px;
+    margin: auto;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: 1.4rem;
+  }
+
+  label {
+    font-weight: 600;
+    margin-top: 16px;
+    display: block;
+    font-size: 0.95rem;
+  }
+
+  select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+  }
+
+  select:focus {
+    outline: none;
+    border-color: #2563eb;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .view-btn {
+    background: #2563eb;
+    color: #fff;
+  }
+
+  .view-btn:hover {
+    background: #1d4ed8;
+  }
+
+  .download-btn {
+    background: #16a34a;
+    color: #fff;
+  }
+
+  .download-btn:hover {
+    background: #15803d;
+  }
+
+  /* -----------------------------
+     TABLET & DESKTOP
+     ----------------------------- */
+  @media (min-width: 640px) {
+    h2 {
+      font-size: 1.6rem;
+    }
+
+    .actions {
+      flex-direction: row;
+    }
+
+    button {
+      width: 50%;
+    }
+  }
+
+  /* -----------------------------
+     LARGE SCREENS
+     ----------------------------- */
+  @media (min-width: 1024px) {
+    body {
+      padding: 40px;
+    }
+
+    .container {
+      padding: 30px;
+    }
+  }
+</style>
+
+</head>
+
+<body>
+  <div class="container">
+    <h2>Academics Reports</h2>
+
+    <!-- Department -->
+    <label>Department</label>
+    <select id="department">
+      <option value="">Select Department</option>
+      <option value="commerce">Commerce</option>
+      <option value="it">IT</option>
+      <option value="management">Management</option>
+      <option value="law">Law</option>
+    </select>
+
+    <!-- Level -->
+    <div id="levelBox" class="hidden">
+      <label>Level</label>
+      <select id="level">
+        <option value="">Select Level</option>
+        <option value="ug">UG</option>
+        <option value="pg">PG</option>
+      </select>
+    </div>
+
+    <!-- Course -->
+    <div id="courseBox" class="hidden">
+      <label>Course</label>
+      <select id="course"></select>
+    </div>
+    <!-- Semester -->
+<!-- Semester -->
+<div id="semesterBox" class="hidden">
+  <label>Semester</label>
+  <select id="semester" disabled>
+    <option value="">Select Semester</option>
+  </select>
+</div>
+
+    <!-- Role -->
+    <div id="roleBox" class="hidden">
+      <label>Role</label>
+      <select id="role">
+        <option value="">Select Role</option>
+        <option value="pc">Program Coordinator</option>
+        <option value="vac">VAC</option>
+      </select>
+    </div>
+
+    <!-- Actions -->
+    <div id="actionBox" class="hidden actions">
+      <button class="view-btn" id="viewReport">View Report</button>
+      <button class="download-btn" id="downloadReport">Download CSV</button>
+    </div>
+  </div>
+
+  <script>
+/* =====================================================
+   CONFIG (EDIT LATER – SAFE)
+===================================================== */
+const COURSE_MAP = {
+  commerce: { ug: ["B.Com", "B.Com Honours"], pg: ["M.Com"] },
+  it: { ug: ["BCA", "BSc IT"], pg: ["MCA", "MSc IT"] },
+  management: { ug: ["BBA"], pg: ["MBA"] },
+  law: { ug: ["LLB"], pg: ["LLM"] }
+};
+
+const SEMESTER_MAP = {
+  "B.Com": 6, "B.Com Honours": 6, "M.Com": 4,
+  "BCA": 6, "BSc IT": 6, "MCA": 4, "MSc IT": 4,
+  "BBA": 6, "MBA": 4,
+  "LLB": 10, "LLM": 4
+};
+
+/* =====================================================
+   JWT FETCH HELPER (SAME STANDARD AS PC DASHBOARD)
+===================================================== */
+async function apiFetch(url, options = {}) {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("AUTH_REQUIRED");
+
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  if (!res.ok) {
+    const j = await res.json().catch(() => ({}));
+    throw new Error(j.error || "API_ERROR");
+  }
+
+  return res;
+}
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+const department = document.getElementById("department");
+const level = document.getElementById("level");
+const course = document.getElementById("course");
+const semester = document.getElementById("semester");
+const role = document.getElementById("role");
+
+const levelBox = document.getElementById("levelBox");
+const courseBox = document.getElementById("courseBox");
+const semesterBox = document.getElementById("semesterBox");
+const roleBox = document.getElementById("roleBox");
+const actionBox = document.getElementById("actionBox");
+
+/* =====================================================
+   DROPDOWN FLOW (NO UNWANTED RESETS)
+===================================================== */
+department.addEventListener("change", () => {
+  levelBox.classList.remove("hidden");
+});
+
+level.addEventListener("change", () => {
+  const courses = COURSE_MAP[department.value]?.[level.value] || [];
+  course.innerHTML =
+    `<option value="">Select Course</option>` +
+    courses.map(c => `<option value="${c}">${c}</option>`).join("");
+  courseBox.classList.remove("hidden");
+});
+
+course.addEventListener("change", () => {
+  if (!course.value) return;
+
+  semester.innerHTML = `<option value="">Select Semester</option>`;
+  const total = SEMESTER_MAP[course.value] || 6;
+
+  for (let i = 1; i <= total; i++) {
+    semester.innerHTML += `<option value="${i}">Semester ${i}</option>`;
+  }
+
+  semesterBox.classList.remove("hidden");
+  semester.disabled = false;
+});
+
+semester.addEventListener("change", () => {
+  if (!semester.value) return;
+  roleBox.classList.remove("hidden");
+  role.disabled = false;
+});
+
+role.addEventListener("change", () => {
+  actionBox.classList.toggle("hidden", !role.value);
+});
+
+/* =====================================================
+   PARAM BUILDER
+===================================================== */
+function getParams() {
+  return {
+    department: department.value,
+    level: level.value,
+    course: course.value,
+    semester: semester.value,
+    role: role.value
+  };
+}
+
+/* =====================================================
+   VIEW REPORT (REUSES PC & VAC DASHBOARD APIs)
+===================================================== */
+/* document.getElementById("viewReport").onclick = async () => { 
+  const p = getParams();
+
+  const endpoint =
+    p.role === "vac"
+      ? "/api/vac/entries"
+      : "/api/pc/entries";
+
+  try {
+    let data = await (await apiFetch(endpoint)).json();
+
+    // CLIENT-SIDE FILTERING (NO BACKEND CHANGE)
+    data = data.filter(e =>
+      (!p.course || e.programmeName === p.course || e.programmeCode === p.course)
+    );
+
+    renderTable(data);
+  } catch (e) {
+    alert(e.message === "AUTH_REQUIRED" ? "Login required" : e.message);
+  }
+};*/
+
+/* =====================================================
+   CSV DOWNLOAD (CLIENT SIDE – SAFE)
+===================================================== */
+document.getElementById("downloadReport").onclick = async () => {
+  const p = getParams();
+  const endpoint =
+    p.role === "vac"
+      ? "/api/vac/entries"
+      : "/api/pc/entries";
+
+  try {
+    let data = await (await apiFetch(endpoint)).json();
+
+    data = data.filter(e =>
+      (!p.course || e.programmeName === p.course || e.programmeCode === p.course)
+    );
+
+    if (!data.length) return alert("No data to download");
+
+    const headers = Object.keys(data[0]);
+    const rows = data.map(row =>
+      headers.map(h => {
+        const v = row[h] ?? "";
+        const s = typeof v === "object" ? JSON.stringify(v) : String(v);
+        return s.includes(",") ? `"${s.replace(/"/g, '""')}"` : s;
+      }).join(",")
+    );
+
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${p.role}_report.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch (e) {
+    alert("CSV download failed");
+  }
+};
+
+/* =====================================================
+   TABLE RENDER
+===================================================== */
+function renderTable(data) {
+  const box = document.getElementById("resultBox");
+  const thead = document.querySelector("#resultTable thead");
+  const tbody = document.querySelector("#resultTable tbody");
+
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
+
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td>No data found</td></tr>`;
+    box.classList.remove("hidden");
+    return;
+  }
+
+  const headers = Object.keys(data[0]);
+  thead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr>`;
+
+  data.forEach(row => {
+    const tr = document.createElement("tr");
+    headers.forEach(h => {
+      const td = document.createElement("td");
+      td.textContent = typeof row[h] === "object"
+        ? JSON.stringify(row[h])
+        : row[h];
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  box.classList.remove("hidden");
+}
+</script>
+
+</body>
+</html>

@@ -918,14 +918,33 @@
         }
 
         // Add smooth interaction to process buttons
-        document.querySelectorAll('.process-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 150);
-            });
+       const processButtons = document.querySelectorAll('.process-btn');
+
+    processButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+
+            const label = this.querySelector('span').textContent.trim();
+
+            // ======================
+            // Functional Buttons (Commented Out)
+            // ======================
+            // if (label === 'Administration') window.location.href = 'Administration.html';
+            // if (label === 'Admission') window.location.href = 'Admission.html';
+            if (label === 'Academics') window.location.href = 'Academics.html'; // Currently active
+            // if (label === 'Accounts') window.location.href = 'Accounts.html';
+            // if (label === 'Placements') window.location.href = 'Placements.html';
+            // if (label === 'Examination') window.location.href = 'Examination.html';
+            // if (label === 'Research') window.location.href = 'Research.html';
+            // if (label === 'Institute Innovation Cell') window.location.href = 'Innovation.html';
+            // if (label === 'PDIC') window.location.href = 'PDIC.html';
+            // if (label === 'Consultancy') window.location.href = 'Consultancy.html';
+            // if (label === 'Alumni') window.location.href = 'Alumni.html';
         });
+    });
 
         // Animate numbers on load
         function animateValue(element, start, end, duration) {
