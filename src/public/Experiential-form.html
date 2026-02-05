@@ -331,7 +331,7 @@
           <a class="profile-menu-item" href="#">Change Password</a>
         </div>
       </div>
-      <button class="logout-btn">Logout</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </nav>
 
@@ -345,37 +345,37 @@
         <div class="input-grid">
           <div class="input-group">
             <label>Component Type <span class="required">*</span></label>
-            <input type="text" required />
+            <input type="text" name="componentType" required />
           </div>
 
           <div class="input-group">
             <label>Objective <span class="required">*</span></label>
-            <input type="text" required />
+            <input type="text" name="objective" required />
           </div>
 
           <div class="input-group">
             <label>CO Mapped <span class="required">*</span></label>
-            <input type="text" required />
+            <input type="text" name="coMapped" required />
           </div>
 
           <div class="input-group">
             <label>Rubrics <span class="required">*</span></label>
-            <input type="text" required />
+            <input type="text" name="rubrics" required />
           </div>
 
           <div class="input-group">
             <label>Evidence Upload Link <span class="required">*</span></label>
-            <input type="url" required />
+            <input type="url" name="evidenceLink" required />
           </div>
 
           <div class="input-group">
             <label>Report Submitted <span class="required">*</span></label>
-            <input type="text" required />
+            <input type="text" name="reportSubmitted" required />
           </div>
 
           <div class="input-group full-width">
             <label>Program ID (Optional)</label>
-            <input type="text" />
+            <input type="text" name="program_Id" />
           </div>
         </div>
 
@@ -385,7 +385,7 @@
   </div>
 
   <div class="popup" id="popup">
-    <img src="check.png" />
+    <img src="../images/check.jpg" />
     <h2>Thank You!</h2>
     <p>Your form has been submitted successfully.</p>
     <button onclick="closePopup()">OK</button>
@@ -404,14 +404,60 @@
     const form = document.getElementById("componentForm");
     const popup = document.getElementById("popup");
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      popup.classList.add("open-popup");
-      form.reset();
+
+      const inputs = form.querySelectorAll("input");
+      let valid = true;
+      const payload = {};
+
+      inputs.forEach((i) => {
+        i.classList.remove("error");
+        if (!i.value && i.name !== "program_Id") {
+          valid = false;
+          i.classList.add("error");
+        }
+        payload[i.name] = i.value.trim();
+      });
+
+      if (!valid) {
+        alert("Please fill all required fields");
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Please login first");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/experiential/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (!res.ok) return alert(data.error || "Submit failed");
+
+        popup.classList.add("open-popup");
+        form.reset();
+      } catch (err) {
+        alert("Server error");
+      }
     });
 
     function closePopup() {
       popup.classList.remove("open-popup");
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
     }
   </script>
 </body>
