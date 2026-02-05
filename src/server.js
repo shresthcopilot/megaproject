@@ -15,6 +15,7 @@ import experientialRoutes from "./routes/experiential.js";
 import libraryRoutes from "./routes/library.js";
 import learnerRoutes from "./routes/learner-support.js";
 import { errorHandler, notFoundHandler } from "./middleware/index.js";
+import registerRoutes from "./routes/register.js";
 
 
 
@@ -43,9 +44,9 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 app.use("/api/auth", authRoutes);
+app.use("/api/register", registerRoutes);
 
 import { pageAuthMiddleware} from "./middleware/pageAuthMiddleware.js";
-app.use("/api/register", pageAuthMiddleware, authRoutes);
 
 
 app.use("/api/vac", pageAuthMiddleware, vacRoutes);

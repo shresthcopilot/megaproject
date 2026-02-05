@@ -157,13 +157,29 @@ button:disabled {
 
 <div class="input-box">
 <span>👤</span>
-<input type="text" id="username" placeholder="Username" required minlength="3">
+<input type="text" id="username" placeholder="Username" required minlength="3" autocomplete="username">
 </div>
 
 <div class="input-box">
 <span>🔒</span>
-<input type="password" id="password" placeholder="Password" required minlength="5">
+<input type="password" id="password" placeholder="Password" required minlength="5"  autocomplete="new-password">
 </div>
+<div class="input-box">
+  <span>🔐</span>
+  <input
+    type="password"
+    id="confirmPassword"
+    placeholder="Confirm Password"
+    required
+    minlength="5"
+    autocomplete="new-password"
+  />
+</div>
+
+<p id="passwordError" style="color:red;font-size:13px;display:none;">
+  Passwords do not match
+</p>
+
 
 <div class="input-box">
 <div class="custom-select" id="customSelect">
@@ -192,6 +208,28 @@ const customSelect = document.getElementById("customSelect");
 const selected = customSelect.querySelector(".selected");
 const optionList = customSelect.querySelector(".options");
 const options = optionList.querySelectorAll("li");
+const passwordInput = document.getElementById("password");
+const confirmInput = document.getElementById("confirmPassword");
+const passwordError = document.getElementById("passwordError");
+
+function validatePasswords() {
+  if (!confirmInput.value) {
+    passwordError.style.display = "none";
+    btn.disabled = false;
+    return;
+  }
+
+  if (passwordInput.value !== confirmInput.value) {
+    passwordError.style.display = "block";
+    btn.disabled = true;
+  } else {
+    passwordError.style.display = "none";
+    btn.disabled = false;
+  }
+}
+
+passwordInput.addEventListener("input", validatePasswords);
+confirmInput.addEventListener("input", validatePasswords);
 
 // dropdown toggle
 selected.addEventListener("click", () => {
@@ -220,6 +258,13 @@ form.addEventListener("submit", async e => {
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
   const role = selected.dataset.value;
+  if (password !== confirmInput.value) {
+  alert("Passwords do not match");
+  btn.disabled = false;
+  btn.textContent = "Register";
+  return;
+}
+
 
   if (!role) return alert("Select a role");
 
@@ -228,14 +273,26 @@ form.addEventListener("submit", async e => {
 
   try {
     const res = await fetch("/api/register", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ username, password, role })
-    });
+  method: "POST",
+  credentials: "include", // 🔥 REQUIRED for cookies
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ username, password, role })
+});
 
-    const data = await res.json();
 
-    if (!res.ok) throw new Error(data.error || "Failed");
+    let data;
+const contentType = res.headers.get("content-type");
+
+if (contentType && contentType.includes("application/json")) {
+  data = await res.json();
+} else {
+  const text = await res.text();
+  console.error("Non-JSON response:", text);
+  throw new Error("Server returned HTML instead of JSON");
+}
+
+if (!res.ok) throw new Error(data.error || "Failed");
+
 
     alert("Registration Successful");
     window.location.href = "admindashboard.html";
