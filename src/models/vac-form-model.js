@@ -4,7 +4,8 @@ const studentSchema = new mongoose.Schema({
     vacId: {
         type: String,
         required: false,
-        unique: true
+        // multiple students can submit for the same VAC entry
+        unique: false
     },
     program_Id: {
         type: String,
@@ -32,12 +33,12 @@ const studentSchema = new mongoose.Schema({
     sectionSelect: {
         type: String,
         required: true,
-        enum: ["A", "B", "C", "D"]
+        enum: ["A", "B", "C", "D", "E", "F", "G", "H"]
     },
     courseSelect: {
         type: String,
         required: true,
-        enum: ["BBA", "BCA", "B.COM", "MBA FT"],
+        enum: ["BBA", "BCA", "B.COM", "MCA", "MBA FT"],
     },
     certificateFilename: {
         type: String,

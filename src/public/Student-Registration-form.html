@@ -184,7 +184,17 @@
         e.preventDefault();
 
         const fd = new FormData(this);
+        const params = new URLSearchParams(window.location.search);
+        const vacId = params.get('vacId') || "";
+        if (vacId) fd.set('vacId', vacId);
+
+        const certInput = this.querySelector('input[name="certificateUpload"]');
+        if (certInput && certInput.files && certInput.files[0]) {
+          fd.set('certificateFilename', certInput.files[0].name);
+        }
+
         const payload = Object.fromEntries(fd.entries());
+        delete payload.certificateUpload;
 
         try {
           const res = await fetch('/api/vac/submissions', {
