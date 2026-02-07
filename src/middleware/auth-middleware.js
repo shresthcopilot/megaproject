@@ -5,14 +5,19 @@ const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
 
 // Extract token from multiple locations
 const extractToken = (req) => {
-    const header = req.headers.authorization || req.headers.Authorization || "";
-    if (header.startsWith("Bearer ")) return header.split(" ")[1];
-    if (req.cookies?.token) return req.cookies.token;
-    if (req.headers["x-access-token"]) return req.headers["x-access-token"];
-    if (req.query?.token) return req.query.token;
-    if (req.body?.token) return req.body.token;
-    return null;
+  const header = req.headers.authorization || "";
+
+  if (header.startsWith("Bearer ")) {
+    return header.split(" ")[1];
+  }
+
+  if (req.cookies?.token) {
+    return req.cookies.token;
+  }
+
+  return null;
 };
+
 
 // Middleware: authentication required
 export const authMiddleware = (req, res, next) => {
