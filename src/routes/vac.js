@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Student from "../models/vac-form-model.js";
 import VacEntry from "../models/vac-model.js";
 import { authMiddleware } from "../middleware/auth-middleware.js";
+import { upload } from "../middleware/multer-middleware.js";
 
 const router = express.Router();
 
@@ -44,9 +45,9 @@ async function readEntryById(id) {
   };
 }
 
-router.post("/submissions", async (req, res) => {
+router.post("/submissions", upload.single("certificateUpload"), async (req, res) => {
   try {
-    const payload = req.body;
+    const payload = req.body || {};
     if (!payload || Object.keys(payload).length === 0)
       return res.status(400).json({ error: "Empty payload" });
 
@@ -66,7 +67,7 @@ router.post("/submissions", async (req, res) => {
       courseCompleted: payload.courseCompleted || "",
       sectionSelect: payload.sectionSelect || "",
       courseSelect: payload.courseSelect || "",
-      certificateFilename: payload.certificateFilename || "",
+      certificateFilename: (req.file && req.file.filename) || payload.certificateFilename || "",
     });
 
     try {
