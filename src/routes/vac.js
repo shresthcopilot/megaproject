@@ -61,6 +61,10 @@ router.post("/submissions", async (req, res) => {
       vacId: payload.vacId || "",
       program_Id: payload.program_Id || payload.programId || "",
       studentName: payload.studentName || "",
+      department: payload.department || "",
+      level: payload.level || "",
+      course: payload.course || payload.courseSelect || "",
+      semester: payload.semester ? Number(payload.semester) : "",
       enrollmentNumber: payload.enrollmentNumber || payload.enrollmentNo || "",
       phoneNumber: payload.phoneNumber || payload.phone || "",
       courseCompleted: payload.courseCompleted || "",
@@ -146,7 +150,7 @@ function escapeCsvValue(v) {
   return raw.includes(",") || raw.includes("\n") || raw.includes('"') ? '"' + raw.replace(/"/g, '""') + '"' : raw;
 }
 
-router.get("/download", async (req, res) => {
+router.get("/download", authMiddleware, async (req, res) => {
   try {
     const submissions = await readSubmissions();
     const csv = toCSV(submissions);
