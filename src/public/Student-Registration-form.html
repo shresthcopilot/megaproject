@@ -1,267 +1,264 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Student Registration</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #f9f9f9;
-        margin: 20px;
-        color: #202124;
-      }
-      h2 {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        text-align: center;
-        color: #f7f9fa;
-        margin-bottom: 24px;
-        padding: 12px;
-        border-radius: 6px;
-      }
-      form {
-        background: white;
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 24px 32px;
-        border-radius: 8px;
-        box-shadow:
-          0 2px 5px rgba(60, 64, 67, 0.3),
-          0 1px 1px rgba(60, 64, 67, 0.15);
-      }
-      label {
-        display: block;
-        font-weight: 500;
-        margin-bottom: 6px;
-        margin-top: 18px;
-        font-size: 15px;
-      }
-      input[type="text"],
-      input[type="tel"],
-      select,
-      input[type="file"] {
-        width: 100%;
-        padding: 10px 12px;
-        font-size: 15px;
-        border: 1px solid #dadce0;
-        border-radius: 4px;
-        box-sizing: border-box;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Registration Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-      /* Radio Group Styling wapas add kiya hai */
-      .radio-group {
-        display: flex;
-        gap: 24px;
-        margin-top: 8px;
-      }
+  <style>
+    * { box-sizing: border-box; }
 
-      button {
-        margin-top: 32px;
-        background-color: #1a73e8;
-        color: white;
-        font-size: 16px;
-        padding: 14px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        width: 100%;
-      }
-      button:hover {
-        background-color: #155ab6;
-      }
-      .popup {
-        width: 400px;
-        background: #fff;
-        border-radius: 6px;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(0.1);
-        text-align: center;
-        padding: 0 30px 30px;
-        color: #333;
-        visibility: hidden;
-        transition: transform 0.4s;
-        z-index: 1000;
-      }
-      .open-popup {
-        visibility: visible;
-        transform: translate(-50%, -50%) scale(1);
-      }
-      .popup img {
-        width: 100px;
-        margin-top: -50px;
-        border-radius: 50%;
-      }
-      .popup button {
-        margin-top: 30px;
-        background: #6fd649;
-        border-radius: 20px;
-      }
-    </style>
-  </head>
-  <body>
-    <h2>Student Registration Form</h2>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f4f8;
+      padding: 20px;
+    }
 
-    <form id="vacStudentForm">
-      <label>Student Name *</label>
-      <input type="text" name="studentName" required />
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
 
-      <label>Department *</label>
-      <select name="department" id="deptSelect" required>
-        <option value="" disabled selected>Select Department</option>
-        <option value="IT">IT (Information Technology)</option>
-        <option value="Management">Management</option>
-        <option value="Commerce">Commerce</option>
-        <option value="Law">Law</option>
-      </select>
+    .header {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+      padding: 18px;
+      font-size: 22px;
+      text-align: center;
+      font-weight: bold;
+    }
 
-      <label>Level (UG/PG) *</label>
-      <select name="level" id="levelSelect" required disabled>
-        <option value="" disabled selected>Select Level</option>
-        <option value="UG">UG</option>
-        <option value="PG">PG</option>
-      </select>
+    form { padding: 30px; }
 
-      <label>Course *</label>
-      <select name="course" id="courseSelect" required disabled>
-        <option value="" disabled selected>Select Course</option>
-      </select>
+    label {
+      display: block;
+      font-weight: 600;
+      margin: 15px 0 6px;
+    }
 
-      <label>Semester *</label>
-      <select name="semester" id="semesterSelect" required>
-        <option value="" disabled selected>Select Semester</option>
-        <option value="1">1st Sem</option>
-        <option value="2">2nd Sem</option>
-        <option value="3">3rd Sem</option>
-        <option value="4">4th Sem</option>
-        <option value="5">5th Sem</option>
-        <option value="6">6th Sem</option>
-      </select>
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+    }
 
-      <label>Enrollment Number *</label>
-      <input type="text" name="enrollmentNumber" required />
+    .row { display: flex; gap: 20px; }
+    .col { flex: 1; }
 
-      <label>Phone Number *</label>
-      <input type="tel" name="phoneNumber" pattern="[0-9]{10}" required />
+    .radio-group {
+      display: flex;
+      gap: 25px;
+      margin-top: 8px;
+    }
 
-      <label>Course Completed? *</label>
-      <div class="radio-group">
-        <label
-          ><input type="radio" name="courseCompleted" value="Yes" required />
-          Yes</label
-        >
-        <label
-          ><input type="radio" name="courseCompleted" value="No" /> No</label
-        >
+    button {
+      width: 100%;
+      margin-top: 30px;
+      padding: 14px;
+      font-size: 17px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover { opacity: 0.9; }
+
+    .popup {
+      width: 350px;
+      background: #fff;
+      border-radius: 10px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.1);
+      text-align: center;
+      padding: 30px;
+      visibility: hidden;
+      transition: 0.3s ease;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      z-index: 999;
+    }
+
+    .popup.open {
+      visibility: visible;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="header">Student Registration Form</div>
+
+  <form id="studentForm">
+
+    <label>Student Name *</label>
+    <input type="text" name="studentName" required>
+
+    <label>Department *</label>
+    <select id="dept" name="department" required>
+      <option value="" disabled selected>Select Department</option>
+      <option value="IT">IT</option>
+      <option value="Management">Management</option>
+      <option value="Commerce">Commerce</option>
+      <option value="Law">Law</option>
+    </select>
+
+    <div class="row">
+      <div class="col">
+        <label>Level *</label>
+        <select id="level" name="level" disabled required>
+          <option value="" disabled selected>Select Level</option>
+          <option value="UG">UG</option>
+          <option value="PG">PG</option>
+        </select>
       </div>
 
-      <label>Upload Certificate</label>
-      <input type="file" name="certificateUpload" />
-      <button type="submit">Submit</button>
-
-      <div class="popup" id="popup">
-        <img src="../images/check.jpg" />
-        <h2>Thank You!</h2>
-        <p>Your Form Successfully Submitted.</p>
-        <button type="button" onclick="closePopup()">OK</button>
+      <div class="col">
+        <label>Course *</label>
+        <select id="course" name="course" disabled required>
+          <option value="" disabled selected>Select Course</option>
+        </select>
       </div>
-    </form>
+    </div>
 
-    <script>
-      
-      const courseMap = new Map([
-        ["IT-UG", "BCA"],
-        ["IT-PG", "MCA"],
-        ["Law-UG", "LLB"],
-        ["Law-PG", "LLM"],
-        ["Commerce-UG", "B.Com"],
-        ["Management-UG", "BBA"],
-        ["Management-PG", "MBA"],
-      ]);
+    <div class="row">
+      <div class="col">
+        <label>Semester *</label>
+        <select name="semester" required>
+          <option value="" disabled selected>Select Semester</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </div>
 
-      const deptSelect = document.getElementById("deptSelect");
-      const levelSelect = document.getElementById("levelSelect");
-      const courseSelect = document.getElementById("courseSelect");
-      const semesterSelect = document.getElementById("semesterSelect");
+      <div class="col">
+        <label>Enrollment Number *</label>
+        <input type="text" name="enrollmentNumber" required>
+      </div>
+    </div>
 
-      deptSelect.addEventListener("change", () => {
-        levelSelect.disabled = false;
-        updateCourse();
-      });
+    <label>Phone Number *</label>
+    <input type="tel" name="phoneNumber" pattern="[0-9]{10}" required>
 
-      levelSelect.addEventListener("change", updateCourse);
+    <label>Course Completed? *</label>
+    <div class="radio-group">
+      <label><input type="radio" name="courseCompleted" value="Yes" required> Yes</label>
+      <label><input type="radio" name="courseCompleted" value="No"> No</label>
+    </div>
 
-      function updateCourse() {
-        const selectedKey = `${deptSelect.value}-${levelSelect.value}`;
-        const course = courseMap.get(selectedKey);
+    <label>Upload Certificate</label>
+    <input type="file" name="certificate">
 
-        courseSelect.innerHTML =
-          '<option value="" disabled selected>Select Course</option>';
+    <button type="submit">Submit</button>
+  </form>
+</div>
 
-        if (course) {
-          courseSelect.disabled = false;
-          const opt = document.createElement("option");
-          opt.value = course;
-          opt.textContent = course;
-          courseSelect.appendChild(opt);
-          courseSelect.value = course;
-        } else {
-          courseSelect.disabled = true;
-        }
-      }
+<div class="popup" id="popup">
+  <h2>Thank You!</h2>
+  <p>Your form has been submitted successfully.</p>
+  <button onclick="closePopup()">OK</button>
+</div>
 
-      document
-        .getElementById("vacStudentForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
+<script>
+  const courseMap = new Map([
+    ["IT-UG", "BCA"],
+    ["IT-PG", "MCA"],
+    ["Management-UG", "BBA"],
+    ["Management-PG", "MBA"],
+    ["Commerce-UG", "B.Com"],
+    ["Law-UG", "LLB"],
+    ["Law-PG", "LLM"]
+  ]);
 
-          const fd = new FormData(this);
-          const payload = Object.fromEntries(fd.entries());
+  const dept = document.getElementById("dept");
+  const level = document.getElementById("level");
+  const course = document.getElementById("course");
+  const popup = document.getElementById("popup");
+  const form = document.getElementById("studentForm");
 
-          // Backend expects certificateFilename (string), not a file upload
-          const file = this.elements.certificateUpload?.files?.[0];
-          payload.certificateFilename = file ? file.name : "";
-          delete payload.certificateUpload;
+  dept.addEventListener("change", () => {
+    level.disabled = false;
+    updateCourse();
+  });
 
-          console.log("Sending Data:", payload);
+  level.addEventListener("change", updateCourse);
 
-          try {
+  function updateCourse() {
+    const key = `${dept.value}-${level.value}`;
+    const value = courseMap.get(key);
+
+    course.innerHTML = `<option disabled selected>Select Course</option>`;
+
+    if (value) {
+      course.disabled = false;
+      const opt = document.createElement("option");
+      opt.value = value;
+      opt.textContent = value;
+      course.appendChild(opt);
+      course.value = value;
+    } else {
+      course.disabled = true;
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const params = new URLSearchParams(window.location.search);
+    const vacId = params.get("vacId");
+    const programId = params.get("program_Id") || params.get("programId");
+
+    // Only send valid Mongo ObjectId to prevent cast errors.
+    if (vacId && /^[a-fA-F0-9]{24}$/.test(vacId)) {
+      formData.append("vacId", vacId);
+    }
+
+    if (programId) {
+      formData.append("program_Id", programId);
+    }
+
+     try {
             const res = await fetch("/api/vac/submissions", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
+              
+              body: formData
             });
 
-            if (!res.ok) {
-              let msg = "Submission failed or Server is down";
-              try {
-                const data = await res.json();
-                if (res.status === 409)
-                  msg = "Enrollment number already exists";
-                else if (data && data.error) msg = data.error;
-              } catch {}
-              throw new Error(msg);
-            }
-
+      if (!res.ok) throw new Error();
             openPopup();
-            this.reset();
-            levelSelect.disabled = true;
-            courseSelect.disabled = true;
+            form.reset();
+            level.disabled = true;
+            course.disabled = true;
           } catch (err) {
             // For testing purposes, uncomment next line to see popup even if backend fails
             // openPopup();
-            alert(err?.message || "Submission failed or Server is down");
+            alert("Submission failed or Server is down");
           }
         });
 
-      const popup = document.getElementById("popup");
+      
       function openPopup() {
-        popup.classList.add("open-popup");
+        popup.classList.add("open");
       }
       function closePopup() {
-        popup.classList.remove("open-popup");
+        popup.classList.remove("open");
       }
-    </script>
-  </body>
+</script>
+
+</body>
 </html>

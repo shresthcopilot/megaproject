@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Academics Reports</title>
+<title>Academic Reports</title>
 
 <style>
 body{
-    font-family: Arial, sans-serif;
-    background:#f2f4f7;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background:#eef1f6;
+    margin:0;
     display:flex;
     justify-content:center;
     align-items:center;
@@ -15,83 +16,153 @@ body{
 }
 
 .card{
-    background:#fff;
-    width:700px;
-    padding:30px 40px;
-    border-radius:14px;
-    box-shadow:0 15px 40px rgba(0,0,0,0.15);
-    border-top:6px solid #1f3c88;
+    background:#ffffff;
+    width:800px;
+    padding:40px 50px;
+    border-radius:16px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.12);
+    position:relative;
+}
+
+.card::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:10px;
+    background:#1f3c88;
+    border-top-left-radius:16px;
+    border-top-right-radius:16px;
 }
 
 h2{
     text-align:center;
-    color:#1f3c88;
+    margin-top:10px;
+    margin-bottom:10px;
+    font-size:28px;
+    color:#2c3e50;
 }
 
 .subtitle{
     text-align:center;
-    color:#666;
-    margin-bottom:30px;
+    color:#7f8c8d;
+    margin-bottom:35px;
+    font-size:14px;
 }
 
 .grid{
     display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:22px 30px;
+    grid-template-columns: 1fr 1fr;
+    gap:25px 40px;
 }
 
 label{
-    font-weight:600;
+    font-size:18px;
+    font-weight:700;
+    color:#2c3e50;
     margin-bottom:6px;
     display:block;
+    letter-spacing:0.5px;
 }
 
 select{
     width:100%;
-    padding:10px;
-    border-radius:6px;
-    border:1px solid #ccc;
+    padding:10px 14px;
+    border-radius:8px;
+    border:1px solid #dcdfe6;
+    background:#f9fafc;
+    font-size:14px;
+    transition:all 0.2s ease;
+}
+
+select:focus{
+    outline:none;
+    border-color:#1f3c88;
+    background:#ffffff;
+    box-shadow:0 0 0 2px rgba(31,60,136,0.1);
+}
+
+select:disabled{
+    background:#f1f1f1;
+    color:#999;
+    cursor:not-allowed;
 }
 
 .buttons{
     display:flex;
     justify-content:center;
     gap:20px;
-    margin-top:30px;
+    margin-top:35px;
+}
+
+button{
+    padding:10px 24px;
+    border-radius:8px;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:0.2s;
 }
 
 .btn-primary{
     background:#1f3c88;
     color:white;
-    padding:12px 26px;
     border:none;
-    border-radius:8px;
-    cursor:pointer;
+    box-shadow:0 4px 10px rgba(31,60,136,0.2);
+}
+
+.btn-primary:hover{
+    background:#16306d;
+}
+
+.btn-primary:disabled{
+    background:#8fa2d6;
+    cursor:not-allowed;
 }
 
 .btn-outline{
     background:white;
     color:#1f3c88;
-    padding:12px 26px;
-    border:2px solid #1f3c88;
-    border-radius:8px;
-    cursor:pointer;
+    border:1.5px solid #1f3c88;
 }
 
-.hidden{
-    display:none;
+.btn-outline:hover{
+    background:#f4f6fb;
+}
+
+.status{
+    margin-top:20px;
+    text-align:center;
+    font-size:14px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:30px;
+}
+
+th, td{
+    padding:10px;
+    border-bottom:1px solid #eee;
+    font-size:13px;
+}
+
+th{
+    background:#f6f8fb;
+    font-weight:600;
 }
 </style>
-</head>
 
+</head>
 <body>
 
 <div class="card">
-    <h2>Academics Reports</h2>
-    <div class="subtitle">Select parameters to generate your academic data</div>
+    <h2>Academic Reports</h2>
+    <div class="subtitle">Select parameters to generate academic report</div>
 
     <div class="grid">
-
         <div>
             <label>Department</label>
             <select id="department">
@@ -103,62 +174,51 @@ select{
             </select>
         </div>
 
-        <div id="levelBox" class="hidden">
+        <div>
             <label>Level</label>
-            <select id="level">
+            <select id="level" disabled>
                 <option value="">Select Level</option>
                 <option value="ug">UG</option>
                 <option value="pg">PG</option>
             </select>
         </div>
 
-        <div id="courseBox" class="hidden">
+        <div>
             <label>Course</label>
-            <select id="course"></select>
-        </div>
-
-        <div id="semesterBox" class="hidden">
-            <label>Semester</label>
-            <select id="semester"></select>
-        </div>
-
-        <div id="roleBox" class="hidden">
-            <label>Role</label>
-            <select id="role">
-                <option value="">Select Role</option>
-                <option value="pc">Program Coordinator</option>
-                <option value="vac">vac</option>
+            <select id="course" disabled>
+                <option value="">Select Course</option>
             </select>
         </div>
 
+        <div>
+            <label>Semester</label>
+            <select id="semester" disabled>
+                <option value="">Select Semester</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Role</label>
+            <select id="role" disabled>
+                <option value="">Select Role</option>
+                <option value="pc">Program Coordinator</option>
+                <option value="vac">VAC</option>
+            </select>
+        </div>
     </div>
 
-    <div class="buttons hidden" id="actionBox">
-        <button class="btn-primary" id="viewReport">View Report</button>
-        <button class="btn-outline" id="downloadReport">Download CSV</button>
+    <div class="buttons">
+        <button class="btn-primary" id="viewReport" disabled>View Report</button>
+        <button class="btn-outline" id="downloadReport" disabled>Download CSV</button>
     </div>
 
-    <div id="reportBox" class="hidden" style="margin-top:30px;">
-        <table id="reportTable" style="width:100%; border-collapse:collapse;">
-            <thead>
-                <tr>
-                    <th style="text-align:left; padding:10px; border-bottom:1px solid #ddd;">Student Name</th>
-                    <th style="text-align:left; padding:10px; border-bottom:1px solid #ddd;">Enrollment No.</th>
-                    <th style="text-align:left; padding:10px; border-bottom:1px solid #ddd;">Phone</th>
-                    <th style="text-align:left; padding:10px; border-bottom:1px solid #ddd;">Department</th>
-                    <th style="text-align:left; padding:10px; border-bottom:1px solid #ddd;">Level</th>
-                    <th style="text-align:left; padding:10px; border-bottom:1px solid #ddd;">Course</th>
-                    <th style="text-align:left; padding:10px; border-bottom:1px solid #ddd;">Semester</th>
-                    <th style="text-align:left; padding:10px; border-bottom:1px solid #ddd;">Submitted At</th>
-                </tr>
-            </thead>
-            <tbody id="reportBody"></tbody>
-        </table>
-    </div>
+    <div class="status" id="statusMsg"></div>
+    <div class="loader" id="loader"></div>
+
+    <div id="reportBox"></div>
 </div>
 
 <script>
-/* ================= CONFIG ================= */
 const COURSE_MAP = {
   commerce: { ug: ["B.Com"], pg: [] },
   it: { ug: ["BCA"], pg: ["MCA"] },
@@ -167,188 +227,196 @@ const COURSE_MAP = {
 };
 
 const SEMESTER_MAP = {
-  "B.Com": 6,
-  "BCA": 6,
-  "MCA": 4,
-  "BBA": 6,
-  "MBA": 4,
-  "LLB": 6,
-  "LLM": 6
+  "B.Com": 6, "BCA": 6, "MCA": 4,
+  "BBA": 6, "MBA": 4,
+  "LLB": 6, "LLM": 6
 };
 
-/* ================= JWT FETCH ================= */
-async function apiFetch(url) {
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("AUTH_REQUIRED");
-
-  const res = await fetch(url, {
-    headers: {
-      Authorization: "Bearer " + token,
-      "Content-Type": "application/json"
-    }
-  });
-
-  if (!res.ok) throw new Error("API_ERROR");
-  return res;
-}
-
-/* ================= ELEMENTS ================= */
 const department = document.getElementById("department");
 const level = document.getElementById("level");
 const course = document.getElementById("course");
 const semester = document.getElementById("semester");
 const role = document.getElementById("role");
-
-const levelBox = document.getElementById("levelBox");
-const courseBox = document.getElementById("courseBox");
-const semesterBox = document.getElementById("semesterBox");
-const roleBox = document.getElementById("roleBox");
-const actionBox = document.getElementById("actionBox");
+const viewBtn = document.getElementById("viewReport");
+const downloadBtn = document.getElementById("downloadReport");
+const statusMsg = document.getElementById("statusMsg");
+const loader = document.getElementById("loader");
 const reportBox = document.getElementById("reportBox");
-const reportBody = document.getElementById("reportBody");
 
-/* ================= FLOW ================= */
+function normalize(v){ return String(v||"").toLowerCase().trim(); }
+
+function updateButtons(){
+    const ready = department.value && level.value && course.value && semester.value && role.value;
+    viewBtn.disabled = !ready;
+    downloadBtn.disabled = !ready;
+}
+
 department.onchange = () => {
-  /* RESET VALUES */
-  level.value = "";
-  course.innerHTML = `<option value="">Select Course</option>`;
-  semester.innerHTML = `<option value="">Select Semester</option>`;
-  role.value = "";
-
-  /* HIDE DEPENDENT SECTIONS */
-  levelBox.classList.add("hidden");
-  courseBox.classList.add("hidden");
-  semesterBox.classList.add("hidden");
-  roleBox.classList.add("hidden");
-  actionBox.classList.add("hidden");
-
-  /* RE-ENABLE FLOW */
-  if (department.value) {
-    levelBox.classList.remove("hidden");
-  }
+    level.disabled = !department.value;
+    level.value="";
+    course.disabled=true;
+    semester.disabled=true;
+    role.disabled=true;
+    updateButtons();
 };
 
 level.onchange = () => {
-  const list = COURSE_MAP[department.value]?.[level.value] || [];
-  course.innerHTML =
-    `<option value="">Select Course</option>` +
-    list.map(c => `<option value="${c}">${c}</option>`).join("");
-  courseBox.classList.remove("hidden");
+    const list = COURSE_MAP[department.value]?.[level.value] || [];
+    course.innerHTML = `<option value="">Select Course</option>` +
+        list.map(c=>`<option value="${c}">${c}</option>`).join("");
+    course.disabled = !list.length;
+    semester.disabled = true;
+    role.disabled = true;
+    updateButtons();
 };
 
 course.onchange = () => {
-  if (!course.value) return;
-  semester.innerHTML = `<option value="">Select Semester</option>`;
-  for (let i = 1; i <= (SEMESTER_MAP[course.value] || 6); i++) {
-    semester.innerHTML += `<option value="${i}">Semester ${i}</option>`;
-  }
-  semesterBox.classList.remove("hidden");
-};
-
-semester.onchange = () => roleBox.classList.remove("hidden");
-role.onchange = () => actionBox.classList.toggle("hidden", !role.value);
-
-function normalize(value) {
-  return String(value || "").trim().toLowerCase();
-}
-
-async function fetchSubmissions() {
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("AUTH_REQUIRED");
-  const res = await fetch("/api/vac/submissions", {
-    headers: { Authorization: "Bearer " + token }
-  });
-  if (!res.ok) throw new Error("API_ERROR");
-  return res.json();
-}
-
-function applyFilters(rows) {
-  const dept = normalize(department.value);
-  const lvl = normalize(level.value);
-  const crs = normalize(course.value);
-  const sem = semester.value ? Number(semester.value) : null;
-
-  return (rows || []).filter(r => {
-    if (dept && normalize(r.department) !== dept) return false;
-    if (lvl && normalize(r.level) !== lvl) return false;
-    const rCourse = normalize(r.course || r.courseSelect);
-    if (crs && rCourse !== crs) return false;
-    if (sem && Number(r.semester) !== sem) return false;
-    return true;
-  });
-}
-
-function renderReport(rows) {
-  reportBody.innerHTML = "";
-  if (!rows.length) {
-    reportBody.innerHTML =
-      `<tr><td colspan="8" style="padding:12px;color:#666;">No matching student submissions found.</td></tr>`;
-    return;
-  }
-  rows.forEach(r => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td style="padding:10px; border-bottom:1px solid #eee;">${r.studentName || "N/A"}</td>
-      <td style="padding:10px; border-bottom:1px solid #eee;">${r.enrollmentNumber || "N/A"}</td>
-      <td style="padding:10px; border-bottom:1px solid #eee;">${r.phoneNumber || "N/A"}</td>
-      <td style="padding:10px; border-bottom:1px solid #eee;">${r.department || "N/A"}</td>
-      <td style="padding:10px; border-bottom:1px solid #eee;">${r.level || "N/A"}</td>
-      <td style="padding:10px; border-bottom:1px solid #eee;">${r.course || r.courseSelect || "N/A"}</td>
-      <td style="padding:10px; border-bottom:1px solid #eee;">${r.semester || "N/A"}</td>
-      <td style="padding:10px; border-bottom:1px solid #eee;">${r.createdAt || r.timestamp || "N/A"}</td>
-    `;
-    reportBody.appendChild(tr);
-  });
-}
-
-document.getElementById("viewReport").onclick = async () => {
-  try {
-    const submissions = await fetchSubmissions();
-    const filtered = applyFilters(submissions);
-    reportBox.classList.remove("hidden");
-    renderReport(filtered);
-  } catch (err) {
-    if (err && err.message === "AUTH_REQUIRED") {
-      alert("Please login to view reports.");
-    } else {
-      alert("Failed to load report");
+    semester.innerHTML = `<option value="">Select Semester</option>`;
+    for(let i=1;i<=SEMESTER_MAP[course.value];i++){
+        semester.innerHTML += `<option value="${i}">Semester ${i}</option>`;
     }
-  }
+    semester.disabled = false;
+    role.disabled = true;
+    updateButtons();
 };
 
-/* ================= CSV ================= */
-document.getElementById("downloadReport").onclick = async () => {
-  try {
-    const submissions = await fetchSubmissions();
-    const data = applyFilters(submissions);
-    if (!data.length) return alert("No matching data");
-
-    const headers = [
-      "studentName",
-      "enrollmentNumber",
-      "phoneNumber",
-      "department",
-      "level",
-      "course",
-      "semester",
-      "courseCompleted",
-      "createdAt"
-    ];
-    const rows = data.map(r =>
-      headers.map(h => `"${r[h] ?? r[h === "course" ? "courseSelect" : h] ?? ""}"`).join(",")
-    );
-    const csv = [headers.join(","), ...rows].join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "report.csv";
-    a.click();
-  } catch {
-    alert("CSV download failed");
-  }
+semester.onchange = () => {
+    role.disabled = false;
+    updateButtons();
 };
+
+role.onchange = updateButtons;
+
+async function fetchSubmissions(){
+    const token = localStorage.getItem("token");
+    const res = await fetch("/api/vac/submissions",{
+        headers:{ Authorization:"Bearer "+token }
+    });
+    if(!res.ok) throw new Error("API_ERROR");
+    return res.json();
+}
+
+function render(rows){
+    if(!rows.length){
+        reportBox.innerHTML = "<p>No matching submissions found.</p>";
+        return;
+    }
+
+    reportBox.innerHTML = `
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Enrollment</th>
+                <th>Phone</th>
+                <th>Dept</th>
+                <th>Level</th>
+                <th>Course</th>
+                <th>Sem</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rows.map(r=>`
+            <tr>
+                <td>${r.studentName||"-"}</td>
+                <td>${r.enrollmentNumber||"-"}</td>
+                <td>${r.phoneNumber||"-"}</td>
+                <td>${r.department||"-"}</td>
+                <td>${r.level||"-"}</td>
+                <td>${r.course||r.courseSelect||"-"}</td>
+                <td>${r.semester||"-"}</td>
+                <td>${r.createdAt||"-"}</td>
+            </tr>`).join("")}
+        </tbody>
+    </table>`;
+}
+
+viewBtn.onclick = async ()=>{
+    if(role.value==="pc"){
+        window.location.href="pcdashboard.html";
+        return;
+    }
+
+    try{
+        loader.innerText="Loading...";
+        statusMsg.innerText="";
+        const data = await fetchSubmissions();
+
+        const filtered = data.filter(r =>
+            normalize(r.department)===normalize(department.value) &&
+            normalize(r.level)===normalize(level.value) &&
+            normalize(r.course||r.courseSelect)===normalize(course.value) &&
+            Number(r.semester)===Number(semester.value)
+        );
+
+        loader.innerText="";
+        render(filtered);
+
+    }catch(e){
+        loader.innerText="";
+        statusMsg.className="status error";
+        statusMsg.innerText="Failed to load report. Please login again.";
+    }
+};
+downloadBtn.onclick = async () => {
+    try {
+        loader.innerText = "Preparing CSV...";
+        statusMsg.innerText = "";
+
+        const data = await fetchSubmissions();
+
+        const filtered = data.filter(r =>
+            normalize(r.department) === normalize(department.value) &&
+            normalize(r.level) === normalize(level.value) &&
+            normalize(r.course || r.courseSelect) === normalize(course.value) &&
+            Number(r.semester) === Number(semester.value)
+        );
+
+        if (!filtered.length) {
+            loader.innerText = "";
+            statusMsg.className = "status error";
+            statusMsg.innerText = "No matching data to download.";
+            return;
+        }
+
+        const headers = [
+            "studentName",
+            "enrollmentNumber",
+            "phoneNumber",
+            "department",
+            "level",
+            "course",
+            "semester",
+            "createdAt"
+        ];
+
+        const rows = filtered.map(r =>
+            headers.map(h => `"${r[h] ?? r[h === "course" ? "courseSelect" : h] ?? ""}"`).join(",")
+        );
+
+        const csvContent = [headers.join(","), ...rows].join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+
+        link.href = URL.createObjectURL(blob);
+        link.download = "academic_report.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        loader.innerText = "";
+        statusMsg.className = "status success";
+        statusMsg.innerText = "CSV downloaded successfully.";
+
+    } catch (error) {
+        loader.innerText = "";
+        statusMsg.className = "status error";
+        statusMsg.innerText = "Failed to download CSV.";
+    }
+};
+
 </script>
-
 </body>
 </html>

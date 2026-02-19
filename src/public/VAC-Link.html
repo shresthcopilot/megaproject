@@ -451,19 +451,19 @@
 
           <div class="form-group">
             <label>Duration *</label>
-            <input type="number" id="duration1" />
+            <input type="number" id="duration1" min="1" required/>
             <div id="durationError1" class="error-message">Invalid</div>
           </div>
 
           <div class="form-group">
             <label>Times Offered *</label>
-            <input type="number" id="timesOffered1" />
+            <input type="number" id="timesOffered1" min="1" required />
             <div id="timesError1" class="error-message">Invalid</div>
           </div>
 
           <div class="form-group">
             <label>Coordinator *</label>
-            <input id="coordinator1" />
+            <input id="coordinator1" required />
             <div id="coordinatorError1" class="error-message">Required</div>
           </div>
         </div>
@@ -498,7 +498,8 @@
           duration: +duration1.value || 0,
           timesOffered: +timesOffered1.value || 0,
           coordinator: coordinator1.value.trim()
-        }]
+        }],
+        program_Id: ""
       };
 
       const res = await fetch('/api/vac/entries', {
@@ -510,8 +511,19 @@
         body: JSON.stringify(payload)
       });
 
+      if (!res.ok) {
+        const msg = await res.text();
+        alert(msg || "Failed to create VAC entry");
+        return;
+      }
+
       const data = await res.json();
-      const link = `Student-Registration-form.html?vacId=${data.id || Date.now()}`;
+      if (!data.id) {
+        alert("VAC entry created but entry id missing in response.");
+        return;
+      }
+
+      const link = `Student-Registration-form.html?vacId=${encodeURIComponent(data.id)}`;
 
       studentLink.href = link;
       studentLink.textContent = link;

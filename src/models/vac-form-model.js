@@ -1,6 +1,18 @@
 import mongoose from "mongoose";
 
 const studentSchema = new mongoose.Schema({
+  vacId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "VacEntry",
+    required: false,
+  },
+
+  program_Id: {
+    type: String,
+    default: "",
+    trim: true,
+  },
+
   studentName: {
     type: String,
     required: true,
@@ -35,7 +47,7 @@ const studentSchema = new mongoose.Schema({
   enrollmentNumber: {
     type: String,
     required: true,
-    unique: true,
+    
     trim: true,
   },
 
