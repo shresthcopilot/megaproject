@@ -5,7 +5,7 @@ import { authMiddleware } from "../middleware/auth-middleware.js";
 
 const router = express.Router();
 
-/* ================= SUBMIT ================= */
+/*  SUBMIT  */
 router.post(
   "/submit",
   authMiddleware,
@@ -43,7 +43,7 @@ router.post(
   }
 );
 
-/* ================= LIST ================= */
+/*  LIST  */
 router.get("/entries", authMiddleware, async (req, res) => {
   try {
     const q = {};
@@ -75,7 +75,7 @@ router.get("/entries", authMiddleware, async (req, res) => {
   }
 });
 
-/* ================= READ ONE ================= */
+/*  READ ONE  */
 router.get("/entries/:id", authMiddleware, async (req, res) => {
   try {
     const doc = await Capacity.findById(req.params.id).lean();

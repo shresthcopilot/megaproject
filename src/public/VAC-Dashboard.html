@@ -9,92 +9,65 @@
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
-      background: linear-gradient(135deg,
-          #edf7ff 0%,
-          #c6e3ff 25%,
-          #86c2ff 60%,
-          #4a90e2 100%);
+      background: #f2f4f8;
       min-height: 100vh;
-      background-attachment: fixed;
     }
 
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      border-radius: 22px;
-      background: linear-gradient(135deg,
-          rgba(255, 255, 255, 0.35),
-          rgba(255, 255, 255, 0.15));
-      backdrop-filter: blur(22px) saturate(160%);
-      -webkit-backdrop-filter: blur(22px) saturate(160%);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      box-shadow:
-        0 30px 60px rgba(0, 0, 0, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
-      position: relative;
-      overflow: hidden;
+      background: #ffffff;
+      border-radius: 10px;
       padding: 30px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     }
 
     h2 {
       text-align: center;
-      color: #333;
+      color: #fff;
       margin-bottom: 30px;
-      background: linear-gradient(135deg,
-          rgba(255, 255, 255, 0.35),
-          rgba(255, 255, 255, 0.15));
-      backdrop-filter: blur(22px) saturate(160%);
-      -webkit-backdrop-filter: blur(22px) saturate(160%);
-      padding: 20px;
+      padding: 15px;
       border-radius: 8px;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
+      background: #fff;
     }
 
     th,
     td {
       padding: 12px;
       text-align: left;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid #e1e5e9;
     }
 
     th {
-      background: linear-gradient(135deg,
-          rgba(255, 255, 255, 0.35),
-          rgba(255, 255, 255, 0.15));
-      backdrop-filter: blur(22px) saturate(160%);
-      -webkit-backdrop-filter: blur(22px) saturate(160%);
-      color: rgb(33, 32, 32);
-      font-weight: bold;
-      border: 0.5px solid rgb(230, 229, 229);
+      background: #f8f9fa;
+      color: #333;
+      font-weight: 600;
     }
 
     tr:hover {
-      background: #f8f9fa;
+      background: #f2f4f8;
     }
 
     .btn {
-      background: linear-gradient(135deg,
-          rgba(255, 255, 255, 0.35),
-          rgba(255, 255, 255, 0.15));
-      backdrop-filter: blur(22px) saturate(160%);
-      -webkit-backdrop-filter: blur(22px) saturate(160%);
-      color: rgb(20, 20, 20);
-      padding: 12px 24px;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+      padding: 10px 22px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 15px;
       margin: 20px 10px;
     }
 
     .btn:hover {
-      background: #f4f4f4;
+      opacity: 0.9;
     }
 
     .no-data {
@@ -115,6 +88,7 @@
       }
     }
   </style>
+
 </head>
 
 <body>
@@ -123,11 +97,7 @@
 
     <div style="text-align: center; margin-bottom: 20px;">
       <button class="btn" onclick="downloadCSV()">📥 Download CSV</button>
-      <button class="btn" onclick="clearDashboard()" style="background: linear-gradient(135deg,
-          rgba(255, 255, 255, 0.35),
-          rgba(255, 255, 255, 0.15));
-      backdrop-filter: blur(22px) saturate(160%);
-      -webkit-backdrop-filter: blur(22px) saturate(160%);;">🗑️ Clear Dashboard</button>
+      <button class="btn" onclick="clearDashboard()">🗑️ Clear Dashboard</button>
       <!-- <button class="btn" onclick="restoreDashboard()" style="background: #6c757d;">🔄 Restore</button>
       <button class="btn" onclick="loadData()">🔁 Refresh</button> -->
     </div>

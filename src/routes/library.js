@@ -4,7 +4,7 @@ import { authMiddleware } from "../middleware/auth-middleware.js";
 
 const router = express.Router();
 
-/* ====== CREATE ENTRY ====== */
+/* CREATE ENTRY */
 router.post("/submit", authMiddleware, async (req, res) => {
   try {
     const p = req.body || {};
@@ -28,7 +28,7 @@ router.post("/submit", authMiddleware, async (req, res) => {
   }
 });
 
-/* ====== LIST ENTRIES ====== */
+/* LIST ENTRIES */
 router.get("/entries", authMiddleware, async (req, res) => {
   try {
     const query = {};
@@ -43,7 +43,7 @@ router.get("/entries", authMiddleware, async (req, res) => {
   }
 });
 
-/* ====== GET SINGLE ENTRY ====== */
+/* GET SINGLE ENTRY */
 router.get("/entries/:id", authMiddleware, async (req, res) => {
   try {
     const doc = await Library.findById(req.params.id).lean();
