@@ -3,8 +3,15 @@ import mongoose from "mongoose";
 import Student from "../models/vac-form-model.js";
 import VacEntry from "../models/vac-model.js";
 import { authMiddleware } from "../middleware/auth-middleware.js";
+<<<<<<< HEAD
 import { upload } from "../middleware/multer-middleware.js";
 
+=======
+import multer from "multer";
+const upload = multer({
+  dest: "uploads/"
+});
+>>>>>>> ad771697c6324feac906f78e67776abf85bd7b39
 const router = express.Router();
 
 async function readSubmissions() {
@@ -45,7 +52,11 @@ async function readEntryById(id) {
   };
 }
 
+<<<<<<< HEAD
 router.post("/submissions", upload.single("certificateUpload"), async (req, res) => {
+=======
+router.post("/submissions",upload.single("certificate"), async (req, res) => {
+>>>>>>> ad771697c6324feac906f78e67776abf85bd7b39
   try {
     const payload = req.body || {};
     if (!payload || Object.keys(payload).length === 0)
@@ -62,6 +73,10 @@ router.post("/submissions", upload.single("certificateUpload"), async (req, res)
       vacId: payload.vacId || "",
       program_Id: payload.program_Id || payload.programId || "",
       studentName: payload.studentName || "",
+      department: payload.department || "",
+      level: payload.level || "",
+      course: payload.course || payload.courseSelect || "",
+      semester: payload.semester ? Number(payload.semester) : "",
       enrollmentNumber: payload.enrollmentNumber || payload.enrollmentNo || "",
       phoneNumber: payload.phoneNumber || payload.phone || "",
       courseCompleted: payload.courseCompleted || "",
@@ -147,7 +162,7 @@ function escapeCsvValue(v) {
   return raw.includes(",") || raw.includes("\n") || raw.includes('"') ? '"' + raw.replace(/"/g, '""') + '"' : raw;
 }
 
-router.get("/download", async (req, res) => {
+router.get("/download", authMiddleware, async (req, res) => {
   try {
     const submissions = await readSubmissions();
     const csv = toCSV(submissions);

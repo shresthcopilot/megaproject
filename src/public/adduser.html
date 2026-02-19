@@ -290,6 +290,7 @@
         if (!res.ok) throw new Error(data.error || "Failed");
 
 
+<<<<<<< HEAD
         alert("Registration Successful");
         window.location.href = "admindashboard.html";
 
@@ -301,6 +302,18 @@
       }
     });
   </script>
+=======
+    alert("Registration Successful");
+   
+  } catch (err) {
+    alert(err.message || "Server error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Register";
+  }
+});
+</script>
+>>>>>>> ad771697c6324feac906f78e67776abf85bd7b39
 
 </body>
 

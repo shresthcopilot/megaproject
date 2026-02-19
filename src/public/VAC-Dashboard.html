@@ -112,7 +112,9 @@
           <th>Enrollment No.</th>
           <th>Phone</th>
           <th>Course Completed</th>
-          <th>Section</th>
+          <th>Department</th>
+          <th>Level</th>
+          <th>Semester</th>
           <th>Course</th>
           <th>Certificate</th>
           <th>Submitted At</th>
@@ -134,7 +136,7 @@
     function renderData(submissions) {
       const tbody = document.getElementById('tableBody');
       if (!submissions || submissions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="no-data">📭 No submissions yet. Fill the form first!</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="no-data">📭 No submissions yet. Fill the form first!</td></tr>';
         return;
       }
       tbody.innerHTML = '';
@@ -145,8 +147,10 @@
           <td>${data.enrollmentNumber || 'N/A'}</td>
           <td>${data.phoneNumber || 'N/A'}</td>
           <td>${data.courseCompleted || 'N/A'}</td>
-          <td>${data.sectionSelect || 'N/A'}</td>
-          <td>${data.courseSelect || 'N/A'}</td>
+          <td>${data.department || data.sectionSelect || 'N/A'}</td>
+          <td>${data.level || 'N/A'}</td>
+          <td>${data.semester || 'N/A'}</td>
+          <td>${data.course || data.courseSelect || 'N/A'}</td>
           <td>${data.certificateFilename || 'N/A'}</td>
           <td>${data.timestamp || data.createdAt || 'N/A'}</td>
         `;
@@ -159,6 +163,9 @@
         const token = localStorage.getItem('token');
         if (token) headers['Authorization'] = 'Bearer ' + token;
         const res = await fetch('/api/vac/submissions', { headers });
+        if (res.status === 401) {
+          throw new Error('Unauthorized');
+        }
         if (!res.ok) throw new Error('Failed to fetch');
         const submissions = await res.json();
         lastLoadedData = submissions;
@@ -166,7 +173,10 @@
       } catch (err) {
         console.error('Failed to load submissions', err);
         const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '<tr><td colspan="8" class="no-data">⚠️ Failed to load submissions — try refreshing the page.</td></tr>';
+        const msg = err.message === 'Unauthorized'
+          ? '🔐 Please login first, then open dashboard.'
+          : '⚠️ Failed to load submissions — try refreshing the page.';
+        tbody.innerHTML = `<tr><td colspan="10" class="no-data">${msg}</td></tr>`;
       }
     }
 
@@ -194,7 +204,7 @@
     function clearDashboard() {
       if (!confirm('Clear Data !')) return;
       const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = '<tr><td colspan="8" class="no-data">🧹 Dashboard cleared locally. Click "Restore" to bring the last loaded data back </td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" class="no-data">🧹 Dashboard cleared locally. Click "Restore" to bring the last loaded data back </td></tr>';
       window.dashboardCleared = true;
     }
 

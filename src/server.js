@@ -1,6 +1,6 @@
+import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
@@ -46,17 +46,17 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/register", registerRoutes);
 
-// import { pageAuthMiddleware } from "./middleware/pageAuthMiddleware.js";
+import { pageAuthMiddleware} from "./middleware/pageAuthMiddleware.js";
 
 
-app.use("/api/vac", vacRoutes);
-app.use("/api/pc", pcRoutes);
-app.use("/api/econtent", econtentRoutes);
-app.use("/api/capacity", capacityRoutes);
-app.use("/api/teaching", teachingRoutes);
-app.use("/api/experiential", experientialRoutes);
-app.use("/api/library", libraryRoutes);
-app.use("/api/learner-support", learnerRoutes);
+app.use("/api/vac", pageAuthMiddleware, vacRoutes);
+app.use("/api/pc", pageAuthMiddleware, pcRoutes);
+app.use("/api/econtent", pageAuthMiddleware, econtentRoutes);
+app.use("/api/capacity", pageAuthMiddleware, capacityRoutes);
+app.use("/api/teaching", pageAuthMiddleware, teachingRoutes);
+app.use("/api/experiential", pageAuthMiddleware, experientialRoutes);
+app.use("/api/library", pageAuthMiddleware, libraryRoutes);
+app.use("/api/learner-support", pageAuthMiddleware, learnerRoutes);
 
 
 // DB status endpoint
