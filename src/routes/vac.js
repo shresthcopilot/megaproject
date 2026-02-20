@@ -3,15 +3,8 @@ import mongoose from "mongoose";
 import Student from "../models/vac-form-model.js";
 import VacEntry from "../models/vac-model.js";
 import { authMiddleware } from "../middleware/auth-middleware.js";
-<<<<<<< HEAD
 import { upload } from "../middleware/multer-middleware.js";
 
-=======
-import multer from "multer";
-const upload = multer({
-  dest: "uploads/"
-});
->>>>>>> ad771697c6324feac906f78e67776abf85bd7b39
 const router = express.Router();
 
 async function readSubmissions() {
@@ -52,11 +45,7 @@ async function readEntryById(id) {
   };
 }
 
-<<<<<<< HEAD
 router.post("/submissions", upload.single("certificateUpload"), async (req, res) => {
-=======
-router.post("/submissions",upload.single("certificate"), async (req, res) => {
->>>>>>> ad771697c6324feac906f78e67776abf85bd7b39
   try {
     const payload = req.body || {};
     if (!payload || Object.keys(payload).length === 0)

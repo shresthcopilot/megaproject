@@ -16,6 +16,8 @@ import libraryRoutes from "./routes/library.js";
 import learnerRoutes from "./routes/learner-support.js";
 import { errorHandler, notFoundHandler } from "./middleware/index.js";
 import registerRoutes from "./routes/register.js";
+import facultyRoutes from "./routes/faculty.js";
+
 
 
 
@@ -43,6 +45,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
+app.get("/faculty", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "faculty.html"));
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/register", registerRoutes);
 
@@ -57,6 +62,7 @@ app.use("/api/teaching", pageAuthMiddleware, teachingRoutes);
 app.use("/api/experiential", pageAuthMiddleware, experientialRoutes);
 app.use("/api/library", pageAuthMiddleware, libraryRoutes);
 app.use("/api/learner-support", pageAuthMiddleware, learnerRoutes);
+app.use("/api/faculty", facultyRoutes);
 
 
 // DB status endpoint

@@ -113,6 +113,130 @@ router.post("/login", async (req, res) => {
     }
 });
 
+// Get all users
+router.get("/users", async (req, res) => {
+    try {
+        const users = await User.find({}, { password: 0 }).exec();
+        
+        if (!users || users.length === 0) {
+            return res.json({
+                success: true,
+                data: [],
+                message: "No users found"
+            });
+        }
+
+        res.json({
+            success: true,
+            data: users,
+            message: "Users fetched successfully"
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            success: false,
+            error: "Server error"
+        });
+    }
+});
+
+// Get user by ID
+router.get("/users/:id", async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id, { password: 0 }).exec();
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: "User not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            data: user
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            success: false,
+            error: "Server error"
+        });
+    }
+});
+
+// Update user
+router.put("/users/:id", async (req, res) => {
+    try {
+        const { username, role } = req.body;
+        const userId = req.params.id;
+
+        if (!username || !role) {
+            return res.status(400).json({
+                success: false,
+                error: "Username and role are required"
+            });
+        }
+
+        // Check if new username/role combination already exists (excluding current user)
+        const existing = await User.findOne({
+            username,
+            role,
+            _id: { $ne: userId }
+        }).exec();
+
+        if (existing) {
+            return res.status(409).json({
+                success: false,
+                error: "User already exists with this username and role"
+            });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { username, role: role.toLowerCase() },
+            { new: true, runValidators: true }
+        ).select("-password");
+
+        res.json({
+            success: true,
+            data: updatedUser,
+            message: "User updated successfully"
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            success: false,
+            error: "Server error"
+        });
+    }
+});
+
+// Delete user
+router.delete("/users/:id", async (req, res) => {
+    try {
+        const user = await User.findByIdAndDelete(req.params.id).exec();
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: "User not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "User deleted successfully"
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            success: false,
+            error: "Server error"
+        });
+    }
+});
+
 // re-export shared auth middleware from middleware folder
 export { authMiddleware } from "../middleware/jwt-middleware.js";
 

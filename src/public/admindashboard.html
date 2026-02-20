@@ -663,10 +663,10 @@
                 <p class="welcome-subtitle">Managing all institutional operations and administrative functions</p>
 
                 <div class="stats-grid">
-                    <div class="stat-card primary">
+                    <div class="stat-card primary" id="FacultyData" onclick="facultyDataBtn()">
                         <div class="stat-info">
-                            <h3>156</h3>
-                            <p>Faculty Member</p>
+                            <h3 id="facultyCountDisplay">0</h3>
+                            <p>Total Faculty Members</p>
                         </div>
                         <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="18" y1="20" x2="18" y2="10" />
@@ -675,9 +675,9 @@
                         </svg>
                     </div>
 
-                    <div class="stat-card secondary">
+                    <div class="stat-card secondary" id="ActiveUsersData" onclick="activeUsersDataBtn()">
                         <div class="stat-info">
-                            <h3>42</h3>
+                            <h3 id="activeUsersCountDisplay">0</h3>
                             <p>Active Users</p>
                         </div>
                         <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -895,13 +895,133 @@
     </div>
 
     <script>
+
+        // ========== LIVE DATA FETCHING ==========
+        const BASE_URL = "/api/auth";
+        let previousCounts = {
+            faculty: 0,
+            activeUsers: 0
+        };
+
+        // Broadcast Channel for real-time updates across tabs
+        const updateChannel = new BroadcastChannel('user_updates');
+
+        // Listen for user updates from activeUsers.html
+        updateChannel.addEventListener('message', (event) => {
+            console.log('Update received:', event.data);
+            // Immediately refresh counts when user actions occur
+            if (event.data.action === 'user_added' || event.data.action === 'user_updated' || event.data.action === 'user_deleted') {
+                setTimeout(() => {
+                    fetchFacultyCount();
+                    fetchActiveUsersCount();
+                }, 100);
+            }
+        });
+
+        // Fetch and update faculty count
+        async function fetchFacultyCount() {
+            try {
+                const response = await fetch(`${BASE_URL}/users`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    // Count users with role "faculty"
+                    const facultyCount = result.data.filter(user => user.role === 'faculty').length;
+                    updateFacultyDisplay(facultyCount);
+                    return facultyCount;
+                }
+            } catch (error) {
+                console.error("Error fetching faculty count:", error);
+            }
+            return 0;
+        }
+
+        // Fetch and update active users count
+        async function fetchActiveUsersCount() {
+            try {
+                const response = await fetch(`${BASE_URL}/users`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    // Total count of all users
+                    const usersCount = result.data.length;
+                    console.log("📊 Total Users in Database:", usersCount);
+                    console.log("👥 User Details:", result.data.map(u => ({ username: u.username, role: u.role })));
+                    updateActiveUsersDisplay(usersCount);
+                    return usersCount;
+                }
+            } catch (error) {
+                console.error("Error fetching active users count:", error);
+            }
+            return 0;
+        }
+
+        // Update faculty display with animation
+        function updateFacultyDisplay(count) {
+            const element = document.querySelector('#facultyCountDisplay');
+            if (element && previousCounts.faculty !== count) {
+                animateValue(element, previousCounts.faculty || 0, count, 600);
+                previousCounts.faculty = count;
+            }
+        }
+
+        // Update active users display with animation
+        function updateActiveUsersDisplay(count) {
+            const element = document.querySelector('#activeUsersCountDisplay');
+            if (element && previousCounts.activeUsers !== count) {
+                animateValue(element, previousCounts.activeUsers || 0, count, 600);
+                previousCounts.activeUsers = count;
+            }
+        }
+
+        // Animate numbers with smooth transition
+        function animateValue(element, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                element.textContent = Math.floor(progress * (end - start) + start).toLocaleString();
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Initialize and refresh data
+        async function initializeStats() {
+            await fetchFacultyCount();
+            await fetchActiveUsersCount();
+        }
+
+        // Setup auto-refresh every 3 seconds
+        function setupAutoRefresh() {
+            initializeStats(); // Initial load
+            setInterval(() => {
+                fetchFacultyCount();
+                fetchActiveUsersCount();
+            }, 3000); // Refresh every 3 seconds
+        }
+
+        // ========== EVENT LISTENERS ==========
+
+        const facultyDataBtn = document.getElementById('FacultyData');
+        facultyDataBtn.addEventListener('click', function () {
+            window.location.href = "faculty.html"; // Navigate to users filtered by faculty role
+        });
+
+        const activeUsersDataBtn = document.getElementById('ActiveUsersData');
+        activeUsersDataBtn.addEventListener('click', function () {
+            window.location.href = "activeUsers.html";
+        });
+
         const adduser = document.querySelector('.btn-primary');
         adduser.addEventListener('click', () => {
             window.location.href = "adduser.html";
         });
+
         // Dropdown menu functionality
         const userProfile = document.getElementById('userProfile');
-
         userProfile.addEventListener('click', function (e) {
             e.stopPropagation();
             this.classList.toggle('active');
@@ -917,17 +1037,10 @@
         // Handle logout
         function handleLogout() {
             console.log('Logout clicked');
-
-            // Clear authentication token from localStorage
             localStorage.removeItem('authToken');
             localStorage.removeItem('user');
-
-            // Also clear any session storage
             sessionStorage.clear();
-
             console.log('Tokens cleared, redirecting...');
-
-            // Redirect to login page (root serves index.html)
             window.location.href = '/';
         }
 
@@ -941,26 +1054,14 @@
             });
         });
 
-        // Animate numbers on load
-        function animateValue(element, start, end, duration) {
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                element.textContent = Math.floor(progress * (end - start) + start).toLocaleString();
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            };
-            window.requestAnimationFrame(step);
-        }
-
         // Trigger animations when page loads
         window.addEventListener('load', () => {
             const studentCount = document.querySelector('.student-count');
             if (studentCount) {
                 animateValue(studentCount, 0, 3387, 2000);
             }
+            // Initialize live stats
+            setupAutoRefresh();
         });
     </script>
 </body>

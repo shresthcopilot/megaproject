@@ -1,0 +1,742 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Faculty Directory - PIMR Gwalior</title>
+
+    <style>
+        :root {
+            --primary-dark: #002e5b;
+
+            --secondary-blue: #2e5a88;
+
+            --table-header: #337ab7;
+
+            --bg-gradient: #d9e2f3;
+
+            --text-color: #333;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+
+            background-color: var(--bg-gradient);
+
+            margin: 0;
+
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+
+            color: var(--primary-dark);
+
+            font-size: 2.2em;
+
+            margin-bottom: 5px;
+
+            text-transform: uppercase;
+
+            font-weight: bold;
+        }
+
+        .subtitle {
+            text-align: center;
+
+            color: #666;
+
+            margin-bottom: 30px;
+
+            font-size: 1.1em;
+        }
+
+        .search-box {
+            display: flex;
+
+            justify-content: center;
+
+            gap: 10px;
+
+            margin-bottom: 40px;
+
+            background: rgba(255, 255, 255, 0.5);
+
+            padding: 15px;
+
+            border-radius: 8px;
+        }
+
+        input,
+        select {
+            padding: 8px 12px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 4px;
+
+            width: 250px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-dark);
+
+            color: white;
+
+            border: none;
+
+            padding: 8px 25px;
+
+            border-radius: 4px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+        }
+
+        .dept-section {
+            background-color: white;
+
+            margin-bottom: 40px;
+
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+            overflow-x: auto;
+        }
+
+        .section-title {
+            background-color: var(--primary-dark);
+
+            color: white;
+
+            padding: 12px;
+
+            text-align: center;
+
+            font-weight: bold;
+
+            font-size: 1.1em;
+
+            letter-spacing: 0.5px;
+        }
+
+        .sub-title {
+            background-color: var(--secondary-blue);
+
+            color: white;
+
+            padding: 8px;
+
+            text-align: center;
+
+            font-weight: bold;
+
+            font-size: 0.95em;
+        }
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: var(--table-header);
+
+            color: white;
+
+            padding: 12px 10px;
+
+            border: 1px solid #ddd;
+
+            text-align: left;
+
+            font-size: 0.9em;
+
+            font-weight: normal;
+        }
+
+        td {
+            padding: 10px;
+
+            border: 1px solid #ddd;
+
+            font-size: 0.9em;
+
+            color: var(--text-color);
+
+            background-color: white;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f9f9f9;
+        }
+
+        .action-btns {
+            display: flex;
+
+            gap: 8px;
+
+            justify-content: center;
+        }
+
+        .view-btn,
+        .edit-btn {
+            background-color: var(--table-header);
+
+            color: white;
+
+            border: none;
+
+            padding: 6px 12px;
+
+            border-radius: 3px;
+
+            cursor: pointer;
+
+            font-size: 0.85em;
+
+            font-weight: bold;
+
+            transition: opacity 0.2s;
+        }
+
+        .view-btn:hover,
+        .edit-btn:hover {
+            opacity: 0.8;
+        }
+
+        .modal {
+            display: none;
+
+            position: fixed;
+
+            z-index: 1000;
+
+            left: 0;
+            top: 0;
+
+            width: 100%;
+            height: 100%;
+
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+
+            margin: 10% auto;
+
+            padding: 20px;
+
+            border-radius: 8px;
+
+            width: 400px;
+
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            font-weight: bold;
+
+            font-size: 1.2em;
+
+            margin-bottom: 15px;
+
+            color: var(--primary-dark);
+
+            border-bottom: 1px solid #eee;
+
+            padding-bottom: 10px;
+        }
+
+        .modal-body label {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .modal-body input {
+            width: 100%;
+            margin-top: 5px;
+            box-sizing: border-box;
+            padding: 8px;
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        .save-btn {
+            background-color: var(--primary-dark);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .cancel-btn {
+            background: #ccc;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            background: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Faculty</h1>
+        <div class="subtitle">Meet Our Academic Experts</div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search Faculty Name..." onkeyup="searchFaculty()" />
+            <select id="departmentSelect" onchange="searchFaculty()">
+                <option value="">All Departments</option>
+
+                <option value="Academic Leaders">Academic Leaders</option>
+
+                <option value="Management">Management</option>
+
+                <option value="Commerce">Commerce</option>
+
+                <option value="IT">IT</option>
+
+                <option value="Law">Law</option>
+            </select>
+
+            <button class="search-btn" onclick="searchFaculty()">Search</button>
+            <button class="search-btn" onclick="openAddModal()">
+                + Add Faculty
+            </button>
+        </div>
+
+        <div id="facultyContainer"></div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Edit Faculty Details</div>
+            <div class="modal-body">
+                <input type="hidden" id="editId" />
+                <label>Name</label>
+                <input type="text" id="editName" />
+                <label>Designation</label>
+                <input type="text" id="editDesignation" />
+                <label>Qualification</label>
+                <input type="text" id="editQualification" />
+            </div>
+
+            <div class="modal-footer">
+                <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+
+                <button class="save-btn" onclick="saveEdit()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Add New Faculty</div>
+            <div class="modal-body">
+                <label>Name</label>
+                <input type="text" id="addName" />
+
+                <label>Designation</label>
+                <input type="text" id="addDesignation" />
+
+                <label>Department</label>
+                <input type="text" id="addDepartment" />
+
+                <label>Qualification</label>
+                <input type="text" id="addQualification" />
+            </div>
+
+            <div class="modal-footer">
+                <button class="cancel-btn" onclick="closeAddModal()">Cancel</button>
+                <button class="save-btn" onclick="saveFaculty()">Add Faculty</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "/api/faculty";
+        let facultyData = [];
+
+        // Get auth token from localStorage or cookie
+        function getAuthToken() {
+            return localStorage.getItem('authToken') || getCookie('authToken') || '';
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return '';
+        }
+
+        function getHeaders() {
+            const headers = { "Content-Type": "application/json" };
+            const token = getAuthToken();
+            if (token) {
+                headers["Authorization"] = `Bearer ${token}`;
+            }
+            return headers;
+        }
+
+        // ================= FETCH =================
+        async function fetchFacultyData() {
+            try {
+                const response = await fetch(API_URL, {
+                    headers: getHeaders()
+                });
+
+                console.log("Faculty API Response Status:", response.status);
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        alert("Unauthorized! Please login first.");
+                        window.location.href = "/";
+                        return;
+                    }
+
+                    const errorText = await response.text();
+                    console.error("API Error Response:", response.status, errorText);
+
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        throw new Error(errorJson.message || `HTTP error! status: ${response.status}`);
+                    } catch (e) {
+                        throw new Error(`HTTP error! status: ${response.status} - ${errorText.substring(0, 100)}`);
+                    }
+                }
+
+                const text = await response.text();
+                console.log("Response text:", text.substring(0, 200));
+
+                if (!text) {
+                    facultyData = [];
+                    renderDepartments([]);
+                    return;
+                }
+
+                try {
+                    facultyData = JSON.parse(text);
+                    if (!Array.isArray(facultyData)) {
+                        console.warn("Response is not an array:", facultyData);
+                        facultyData = [];
+                    }
+                } catch (parseError) {
+                    console.error("JSON Parse Error:", parseError);
+                    console.error("Response was:", text);
+                    throw new Error("Invalid JSON response from server");
+                }
+
+                renderDepartments(facultyData);
+            } catch (error) {
+                console.error("Fetch error:", error);
+                alert("Error loading faculty data: " + error.message + "\n\nCheck browser console for details.");
+            }
+        }
+
+        // ================= RENDER =================
+        function renderDepartments(data) {
+            const container = document.getElementById("facultyContainer");
+            container.innerHTML = "";
+
+            const categories = [
+                {
+                    title: "PRESTIGE INSTITUTE OF MANAGEMENT AND RESEARCH, GWALIOR",
+                    subtitle: "Academic Leaders",
+                    filter: (f) => f.department === "Academic Leaders" || f.isLeader,
+                },
+                {
+                    title: "DEPARTMENT OF MANAGEMENT",
+                    subtitle: "LIST OF FACULTY",
+                    filter: (f) => f.department === "Management",
+                },
+                {
+                    title: "DEPARTMENT OF COMMERCE",
+                    subtitle: "LIST OF FACULTY",
+                    filter: (f) => f.department === "Commerce",
+                },
+                {
+                    title: "DEPARTMENT OF IT",
+                    subtitle: "LIST OF FACULTY",
+                    filter: (f) => f.department === "IT",
+                },
+                {
+                    title: "DEPARTMENT OF LAW",
+                    subtitle: "LIST OF FACULTY",
+                    filter: (f) => f.department.includes("Law"),
+                },
+            ];
+
+            categories.forEach((cat) => {
+                const list = data.filter(cat.filter);
+
+                if (list.length > 0) {
+                    let html = `
+            <div class="dept-section">
+                <div class="section-title">${cat.title}</div>
+                <div class="sub-title">${cat.subtitle}</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">S.N.</th>
+                            <th>Name</th>
+                            <th>Designation</th>
+                            <th>Department</th>
+                            <th>Qualification</th>
+                            <th style="width:180px;text-align:center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+                    list.forEach((f, idx) => {
+                        html += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td style="color:#002e5b;font-weight:bold;">${f.name}</td>
+                        <td>${f.designation}</td>
+                        <td>${f.department}</td>
+                        <td>${f.qualification}</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="view-btn" data-id="${f._id}" data-name="${f.name}" onclick="viewFaculty(this)">View</button>
+                                <button class="edit-btn" data-id="${f._id}" onclick="openEditModal(this)">Edit</button>
+                                <button class="edit-btn" style="background:#c0392b;" data-id="${f._id}" onclick="deleteFaculty(this)">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                    });
+
+                    html += `</tbody></table></div>`;
+                    container.innerHTML += html;
+                }
+            });
+        }
+
+        // ================= SEARCH =================
+        function searchFaculty() {
+            const term = document.getElementById("searchInput").value.toLowerCase();
+            const dept = document.getElementById("departmentSelect").value;
+
+            const filtered = facultyData.filter((f) => {
+                const matchesName = f.name.toLowerCase().includes(term);
+                const matchesDept =
+                    dept === "" || f.department.includes(dept);
+                return matchesName && matchesDept;
+            });
+
+            renderDepartments(filtered);
+        }
+
+        // ================= OPEN EDIT =================
+        function openEditModal(button) {
+            const id = button.getAttribute('data-id');
+            if (!id) {
+                alert("Invalid faculty ID");
+                return;
+            }
+
+            const f = facultyData.find(item => item._id === id);
+            if (!f) {
+                alert("Faculty not found!");
+                return;
+            }
+
+            document.getElementById("editId").value = f._id;
+            document.getElementById("editName").value = f.name;
+            document.getElementById("editDesignation").value = f.designation;
+            document.getElementById("editQualification").value = f.qualification;
+
+            document.getElementById("editModal").style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("editModal").style.display = "none";
+        }
+
+        // ================= ADD =================
+        function openAddModal() {
+            document.getElementById("addModal").style.display = "block";
+        }
+
+        function closeAddModal() {
+            document.getElementById("addModal").style.display = "none";
+        }
+
+        async function saveFaculty() {
+            const name = document.getElementById("addName").value.trim();
+            const designation = document.getElementById("addDesignation").value.trim();
+            const department = document.getElementById("addDepartment").value.trim();
+            const qualification = document.getElementById("addQualification").value.trim();
+
+            if (!name || !designation || !department || !qualification) {
+                alert("All fields required!");
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: getHeaders(),
+                    body: JSON.stringify({ name, designation, department, qualification })
+                });
+
+                const responseText = await response.text();
+                console.log("Add response:", response.status, responseText);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                try {
+                    const data = JSON.parse(responseText);
+                    if (!data.success) {
+                        throw new Error(data.message || "Failed to add faculty");
+                    }
+                } catch (e) {
+                    console.error("Parse error:", e);
+                    throw new Error("Invalid response from server");
+                }
+
+                alert("Faculty added successfully!");
+                document.getElementById("addName").value = "";
+                document.getElementById("addDesignation").value = "";
+                document.getElementById("addDepartment").value = "";
+                document.getElementById("addQualification").value = "";
+                fetchFacultyData();
+                closeAddModal();
+            } catch (error) {
+                console.error("Error adding faculty:", error);
+                alert("Error adding faculty: " + error.message);
+            }
+        }
+
+        // ================= UPDATE =================
+        async function saveEdit() {
+            const id = document.getElementById("editId").value;
+            if (!id) {
+                alert("Invalid faculty ID");
+                return;
+            }
+
+            const name = document.getElementById("editName").value.trim();
+            const designation = document.getElementById("editDesignation").value.trim();
+            const qualification = document.getElementById("editQualification").value.trim();
+
+            if (!name || !designation || !qualification) {
+                alert("All fields required!");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: "PUT",
+                    headers: getHeaders(),
+                    body: JSON.stringify({ name, designation, qualification })
+                });
+
+                const responseText = await response.text();
+                console.log("Update response:", response.status, responseText);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                try {
+                    const data = JSON.parse(responseText);
+                    if (!data.success) {
+                        throw new Error(data.message || "Failed to update faculty");
+                    }
+                } catch (e) {
+                    console.error("Parse error:", e);
+                    throw new Error("Invalid response from server");
+                }
+
+                alert("Faculty updated successfully!");
+                fetchFacultyData();
+                closeModal();
+            } catch (error) {
+                console.error("Error updating faculty:", error);
+                alert("Error updating faculty: " + error.message);
+            }
+        }
+
+        // ================= VIEW =================
+        function viewFaculty(button) {
+            const name = button.getAttribute('data-name');
+            alert("Faculty: " + name);
+        }
+
+        // ================= DELETE =================
+        async function deleteFaculty(button) {
+            const id = button.getAttribute('data-id');
+            if (!id) {
+                alert("Invalid faculty ID");
+                return;
+            }
+
+            if (!confirm("Delete this faculty?")) return;
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: "DELETE",
+                    headers: getHeaders()
+                });
+
+                const responseText = await response.text();
+                console.log("Delete response:", response.status, responseText);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                try {
+                    const data = JSON.parse(responseText);
+                    if (!data.success) {
+                        throw new Error(data.message || "Failed to delete faculty");
+                    }
+                } catch (e) {
+                    console.error("Parse error:", e);
+                    throw new Error("Invalid response from server");
+                }
+
+                alert("Faculty deleted successfully!");
+                fetchFacultyData();
+            } catch (error) {
+                console.error("Error deleting faculty:", error);
+                alert("Error deleting faculty: " + error.message);
+            }
+        }
+
+        window.onload = fetchFacultyData;
+    </script>
+</body>
+
+</html>

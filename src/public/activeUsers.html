@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Active Users Management</title>
+
+    <style>
+        :root {
+            --primary-dark: #002e5b;
+            --secondary-blue: #2e5a88;
+            --table-header: #337ab7;
+            --bg-gradient: #d9e2f3;
+            --text-color: #333;
+            --success-green: #28a745;
+            --danger-red: #dc3545;
+            --warning-yellow: #ffc107;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-gradient);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-dark);
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .add-btn, .refresh-btn {
+            background: var(--primary-dark);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .add-btn:hover, .refresh-btn:hover {
+            opacity: 0.85;
+        }
+
+        #usersContainer {
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--table-header);
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        tr:hover {
+            background: #f0f0f0;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .edit-btn {
+            background: var(--warning-yellow);
+            color: #333;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .delete-btn {
+            background: var(--danger-red);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .edit-btn:hover {
+            opacity: 0.9;
+        }
+
+        .delete-btn:hover {
+            opacity: 0.9;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: var(--primary-dark);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            margin: 10% auto;
+            padding: 25px;
+            border-radius: 8px;
+        }
+
+        .modal-header {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+        }
+
+        .modal-body {
+            margin-bottom: 15px;
+        }
+
+        .modal-body input, .modal-body select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .modal-body label {
+            display: block;
+            margin-top: 10px;
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+
+        .modal-footer {
+            text-align: right;
+            margin-top: 15px;
+        }
+
+        .save-btn {
+            background: var(--success-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+
+        .cancel-btn {
+            background: #ccc;
+            border: none;
+            padding: 10px 20px;
+            margin-right: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .save-btn:hover, .cancel-btn:hover {
+            opacity: 0.9;
+        }
+
+        .error-message {
+            color: var(--danger-red);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            background: #ffe6e6;
+            display: none;
+        }
+
+        .success-message {
+            color: var(--success-green);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            background: #e6ffe6;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Active Users Management</h1>
+
+        <div class="btn-group">
+            <button class="add-btn" onclick="openAddModal()">➕ Add User</button>
+            <button class="refresh-btn" onclick="fetchUsers()">🔄 Refresh</button>
+        </div>
+
+        <div id="messageContainer"></div>
+        <div id="usersContainer"></div>
+
+    </div>
+
+    <!-- Modal -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">Add New User</div>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <div class="modal-body">
+                <label>Username:</label>
+                <input type="text" id="addUsername" placeholder="Enter username" autocomplete="off">
+                
+                <label>Role:</label>
+                <select id="addRole">
+                    <option value="">-- Select Role --</option>
+                    <option value="faculty">Faculty</option>
+                    <option value="pc">PC</option>
+                    <option value="vac">VAC</option>
+                    <option value="admin">Admin</option>
+                    <option value="e-content">E-Content</option>
+                    <option value="e-capacity">E-Capacity</option>
+                    <option value="teaching-learning">Teaching Learning</option>
+                    <option value="experiential">Experiential</option>
+                    <option value="learner-support">Learner Support</option>
+                    <option value="library">Library</option>
+                </select>
+
+                <label>Password (for new users):</label>
+                <input type="password" id="addPassword" placeholder="Enter password">
+            </div>
+
+            <div class="modal-footer">
+                <button class="cancel-btn" onclick="closeAddModal()">Cancel</button>
+                <button class="save-btn" onclick="saveUser()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        const BASE_URL = "/api/auth";  // Use relative URL instead of hardcoded localhost
+        // Broadcast Channel for real-time updates across tabs
+        const updateChannel = new BroadcastChannel('user_updates');
+        // ========== CRUD OPERATIONS ==========
+
+        // Fetch all users from database
+        async function fetchUsers() {
+            try {
+                document.getElementById("usersContainer").innerHTML = '<div class="loading">Loading users...</div>';
+
+                const response = await fetch(`${BASE_URL}/users`);
+                const result = await response.json();
+
+                if (result.success && result.data.length > 0) {
+                    renderUsersTable(result.data);
+                } else {
+                    document.getElementById("usersContainer").innerHTML = '<div class="no-data">📭 No users found in the database</div>';
+                }
+            } catch (error) {
+                console.error("Error fetching users:", error);
+                document.getElementById("usersContainer").innerHTML = '<div class="no-data">❌ Error loading users. Please check your connection.</div>';
+            }
+        }
+
+        // Render users table
+        function renderUsersTable(users) {
+            const container = document.getElementById("usersContainer");
+
+            let html = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>User ID</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            users.forEach((user, index) => {
+                html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${user.username}</strong></td>
+                        <td><span style="background: ${getRoleColor(user.role)}; color: white; padding: 3px 8px; border-radius: 3px;">${user.role}</span></td>
+                        <td><code>${user._id}</code></td>
+                        <td class="action-btns">
+                            <button class="edit-btn" onclick="openEditModal('${user._id}', '${user.username}', '${user.role}')">✏️ Edit</button>
+                            <button class="delete-btn" onclick="deleteUser('${user._id}', '${user.username}')">🗑️ Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                </tbody>
+            </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Get role color
+        function getRoleColor(role) {
+            const colors = {
+                'faculty': '#007bff',
+                'pc': '#28a745',
+                'vac': '#ffc107',
+                'admin': '#dc3545',
+                'e-content': '#17a2b8',
+                'e-capacity': '#6f42c1',
+                'teaching-learning': '#fd7e14',
+                'experiential': '#e83e8c',
+                'learner-support': '#20c997',
+                'library': '#6610f2'
+            };
+            return colors[role] || '#6c757d';
+        }
+
+        // ========== MODAL OPERATIONS ==========
+
+        let editingUserId = null;
+
+        function openAddModal() {
+            editingUserId = null;
+            document.getElementById("modalTitle").innerText = "➕ Add New User";
+            clearForm();
+            document.getElementById("addPassword").style.display = "block";
+            document.getElementById("addPassword").previousElementSibling.style.display = "block";
+            document.getElementById("addModal").style.display = "block";
+            document.getElementById("errorMessage").style.display = "none";
+        }
+
+        function openEditModal(userId, username, role) {
+            editingUserId = userId;
+            document.getElementById("modalTitle").innerText = "✏️ Edit User";
+            document.getElementById("addUsername").value = username;
+            document.getElementById("addRole").value = role;
+            document.getElementById("addPassword").value = "";
+            document.getElementById("addPassword").placeholder = "Leave empty to keep current password";
+            document.getElementById("addPassword").style.display = "block";
+            document.getElementById("addPassword").previousElementSibling.style.display = "block";
+            document.getElementById("addModal").style.display = "block";
+            document.getElementById("errorMessage").style.display = "none";
+        }
+
+        function closeAddModal() {
+            document.getElementById("addModal").style.display = "none";
+            clearForm();
+            editingUserId = null;
+        }
+
+        function clearForm() {
+            document.getElementById("addUsername").value = "";
+            document.getElementById("addRole").value = "";
+            document.getElementById("addPassword").value = "";
+            document.getElementById("errorMessage").innerText = "";
+            document.getElementById("errorMessage").style.display = "none";
+        }
+
+        // Show error message in modal
+        function showErrorMessage(message) {
+            const errorDiv = document.getElementById("errorMessage");
+            errorDiv.innerText = message;
+            errorDiv.style.display = "block";
+        }
+
+        // Show message in container
+        function showMessage(message, type = 'success') {
+            const container = document.getElementById("messageContainer");
+            const msgClass = type === 'success' ? 'success-message' : 'error-message';
+            const div = document.createElement('div');
+            div.className = msgClass;
+            div.innerText = message;
+            div.style.display = 'block';
+            container.innerHTML = '';
+            container.appendChild(div);
+            
+            setTimeout(() => {
+                div.style.display = 'none';
+            }, 3000);
+        }
+
+        // ========== SAVE USER (CREATE/UPDATE) ==========
+
+        async function saveUser() {
+            const username = document.getElementById("addUsername").value.trim();
+            const role = document.getElementById("addRole").value.trim();
+            const password = document.getElementById("addPassword").value.trim();
+
+            // Validation
+            if (!username) {
+                showErrorMessage("❌ Username is required!");
+                return;
+            }
+            if (!role) {
+                showErrorMessage("❌ Role is required!");
+                return;
+            }
+
+            // For new users, password is required
+            if (!editingUserId && !password) {
+                showErrorMessage("❌ Password is required for new users!");
+                return;
+            }
+
+            try {
+                if (editingUserId) {
+                    // Update existing user
+                    await updateUser(editingUserId, username, role);
+                } else {
+                    // Create new user
+                    await createUser(username, password, role);
+                }
+            } catch (error) {
+                showErrorMessage("❌ Error saving user: " + error.message);
+            }
+        }
+
+        // Create new user
+        async function createUser(username, password, role) {
+            const response = await fetch(`${BASE_URL}/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username, password, role: role.toLowerCase() })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to create user");
+            }
+
+            showMessage("✅ User created successfully!", 'success');
+            closeAddModal();
+            await fetchUsers();
+            
+            // Notify other tabs/windows about the update
+            updateChannel.postMessage({ action: 'user_added', username, role });
+        }
+
+        // Update existing user
+        async function updateUser(userId, username, role) {
+            const response = await fetch(`${BASE_URL}/users/${userId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username, role: role.toLowerCase() })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to update user");
+            }
+
+            showMessage("✅ User updated successfully!", 'success');
+            closeAddModal();
+            await fetchUsers();
+            
+            // Notify other tabs/windows about the update
+            updateChannel.postMessage({ action: 'user_updated', username, role });
+        }
+
+        // ========== DELETE USER ==========
+
+        async function deleteUser(userId, username) {
+            if (!confirm(`Are you sure you want to delete user "${username}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/users/${userId}`, {
+                    method: "DELETE"
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || "Failed to delete user");
+                }
+
+                showMessage("✅ User deleted successfully!", 'success');
+                await fetchUsers();
+                
+                // Notify other tabs/windows about the update
+                updateChannel.postMessage({ action: 'user_deleted', username });
+            } catch (error) {
+                showMessage("❌ Error deleting user: " + error.message, 'error');
+            }
+        }
+
+        // ========== INITIALIZE ==========
+
+        // Close modal when clicking outside
+        document.getElementById("addModal").addEventListener("click", function (event) {
+            if (event.target === this) {
+                closeAddModal();
+            }
+        });
+
+        // Load users on page load
+        document.addEventListener("DOMContentLoaded", function () {
+            fetchUsers();
+        });
+
+    </script>
+
+</body>
+
+</html>
