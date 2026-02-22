@@ -485,12 +485,20 @@
 
         // Update existing user
         async function updateUser(userId, username, role) {
+            const password = document.getElementById("addPassword").value.trim();
+            const updateData = { username, role: role.toLowerCase() };
+            
+            // Only include password if it was provided
+            if (password) {
+                updateData.password = password;
+            }
+            
             const response = await fetch(`${BASE_URL}/users/${userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ username, role: role.toLowerCase() })
+                body: JSON.stringify(updateData)
             });
 
             const result = await response.json();

@@ -168,7 +168,7 @@ router.get("/users/:id", async (req, res) => {
 // Update user
 router.put("/users/:id", async (req, res) => {
     try {
-        const { username, role } = req.body;
+        const { username, role, password } = req.body;
         const userId = req.params.id;
 
         if (!username || !role) {
@@ -192,9 +192,20 @@ router.put("/users/:id", async (req, res) => {
             });
         }
 
+        // Prepare update object
+        const updateData = { 
+            username, 
+            role: role.toLowerCase() 
+        };
+
+        // Hash and include password if provided
+        if (password) {
+            updateData.password = await bcrypt.hash(password, saltRounds);
+        }
+
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { username, role: role.toLowerCase() },
+            updateData,
             { new: true, runValidators: true }
         ).select("-password");
 
