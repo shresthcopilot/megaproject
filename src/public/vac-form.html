@@ -333,7 +333,7 @@
             if (!courseName || !courseCode || !duration || !timesOffered || !coordinator) {
               alert("Please fill required fields: Course Name, Course Code, Duration, Times Offered, Coordinator");
               submitBtn.disabled = false;
-              submitBtn.textContent = "📩 Send To Program-Coordinator ";
+              submitBtn.textContent = "Send Data";
               return;
             }
 
@@ -347,7 +347,7 @@
               if (!allowedExtensions.includes(ext)) {
                 alert('Only PDF, JPG, PNG and CSV files are allowed.');
                 submitBtn.disabled = false;
-                submitBtn.textContent = '📩 Send To Program-Coordinator ';
+                submitBtn.textContent = 'Send Data';
                 return;
               }
 
@@ -387,30 +387,38 @@
             if (!token) {
               alert("You must be logged in to submit a VAC entry. Please login first.");
               submitBtn.disabled = false;
-              submitBtn.textContent = "📩 Send To Program-Coordinator ";
+              submitBtn.textContent = "Send Data";
               return;
             }
 
             try {
-              // Save VAC entry to localStorage instead of sending to DB
-              const localEntry = {
-                id: 'local-' + Date.now(),
-                createdAt: new Date().toISOString(),
-                courses: payload.courses,
-                local: true
-              };
-              const existing = JSON.parse(localStorage.getItem('vac:local') || '[]');
-              existing.unshift(localEntry);
-              localStorage.setItem('vac:local', JSON.stringify(existing));
+              // Send JSON payload to VAC entries endpoint (saves to DB)
+              const response = await fetch('/api/vac/entries', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+              });
 
-              alert('VAC entry saved locally and will appear on your dashboard.');
+              const result = await response.json();
+              if (!response.ok) {
+                const msg = result && result.error ? result.error : 'Failed to submit VAC entry';
+                throw new Error(msg);
+              }
+
               openPopup();
-              // window.location.href = 'pcdashboard.html';
+              // Optionally redirect after short delay
+              setTimeout(() => {
+                // refresh or go to dashboard
+                // window.location.href = '/pcdashboard.html';
+              }, 1200);
             } catch (err) {
-              console.error(err);
-              alert('Error while saving VAC entry locally.');
+              console.error('Submit error', err);
+              alert('Error submitting VAC entry: ' + (err.message || err));
               submitBtn.disabled = false;
-              submitBtn.textContent = '📩 Send To Program-Coordinator ';
+              submitBtn.textContent = 'Send Data';
             }
           }
 

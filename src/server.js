@@ -17,6 +17,7 @@ import learnerRoutes from "./routes/learner-support.js";
 import { errorHandler, notFoundHandler } from "./middleware/index.js";
 import registerRoutes from "./routes/register.js";
 import facultyRoutes from "./routes/faculty.js";
+import consolidatedReportRoutes from "./routes/consolidated-report.js";
 
 
 
@@ -48,6 +49,9 @@ app.get("/", (req, res) => {
 app.get("/faculty", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "faculty.html"));
 });
+app.get("/consolidated-report", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "consolidated-report.html"));
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/register", registerRoutes);
 
@@ -63,6 +67,7 @@ app.use("/api/experiential", pageAuthMiddleware, experientialRoutes);
 app.use("/api/library", pageAuthMiddleware, libraryRoutes);
 app.use("/api/learner-support", pageAuthMiddleware, learnerRoutes);
 app.use("/api/faculty", facultyRoutes);
+app.use("/api/consolidated-report", consolidatedReportRoutes);
 
 
 // DB status endpoint

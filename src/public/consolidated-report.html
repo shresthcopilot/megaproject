@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consolidated Forms Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-refresh {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-refresh:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+
+        .btn-logout {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-logout:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .forms-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .form-section {
+            border-bottom: 2px solid #eee;
+            padding: 30px;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .form-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .form-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: white;
+            background: #667eea;
+        }
+
+        .form-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .field-value {
+            font-size: 1rem;
+            color: #333;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+            word-break: break-word;
+        }
+
+        .field-value.empty {
+            color: #999;
+            font-style: italic;
+            border-left-color: #ddd;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .success-message {
+            background: #27ae60;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .info-banner {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-left: 5px solid #2980b9;
+        }
+
+        .info-banner strong {
+            font-size: 1.2rem;
+        }
+
+        .filters-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .filters-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-input, .filter-select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .filter-btn-apply {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .filter-btn-apply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .filter-btn-clear {
+            background: #ecf0f1;
+            color: #555;
+        }
+
+        .filter-btn-clear:hover {
+            background: #bdc3c7;
+        }
+
+        .active-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .filter-tag {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-tag-close {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .filter-tag-close:hover {
+            opacity: 0.7;
+        }
+
+        .summary-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .summary-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .summary-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .no-data {
+            color: #bbb;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-section {
+                padding: 20px;
+            }
+
+            .form-fields {
+                grid-template-columns: 1fr;
+            }
+
+            .form-header {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .header, .action-buttons {
+                display: none;
+            }
+
+            .forms-container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>� Consolidated Forms Report</h1>
+            <p>All submitted forms in a single unified view</p>
+            <div class="action-buttons">
+                <button class="btn btn-refresh" onclick="loadData()">🔄 Refresh</button>
+                <button class="btn btn-download" onclick="downloadPDF()">📥 Download PDF</button>
+                <button class="btn btn-download" onclick="downloadCSV()" style="background: #27ae60;">📊 Download CSV</button>
+                <button class="btn btn-logout" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+
+        <div id="message-container"></div>
+
+        <div id="loading" class="loading" style="display: none;">
+            ⏳ Loading data...
+        </div>
+
+        <div id="content-section" style="display: none;">
+            <div class="filters-section">
+                <div class="filters-title">🔍 Filter Data</div>
+                
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">Form Type</label>
+                        <select class="filter-select" id="filterFormType">
+                            <option value="">All Forms</option>
+                            <option value="VAC">VAC</option>
+                            <option value="Library">Library</option>
+                            <option value="E-Content">E-Content</option>
+                            <option value="Capacity">Capacity</option>
+                            <option value="Teaching & Learning">Teaching & Learning</option>
+                            <option value="Experiential">Experiential</option>
+                            <option value="Learner Support">Learner Support</option>
+                            <option value="PC">PC</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Semester</label>
+                        <select class="filter-select" id="filterSemester">
+                            <option value="">All Semesters</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                            <option value="7">Semester 7</option>
+                            <option value="8">Semester 8</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Department</label>
+                        <select class="filter-select" id="filterDepartment">
+                            <option value="">All Departments</option>
+                            <option value="IT">IT</option>
+                            <option value="Management">Management</option>
+                            <option value="Commerce">Commerce</option>
+                            <option value="Law">Law</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Program ID</label>
+                        <input type="text" class="filter-input" id="filterProgramId" placeholder="e.g., PROG001...">
+                    </div>
+                </div>
+
+                <div class="filter-buttons">
+                    <button class="filter-btn filter-btn-apply" onclick="applyFilters()">🔎 Apply Filters</button>
+                    <button class="filter-btn filter-btn-clear" onclick="clearFilters()">✕ Clear Filters</button>
+                </div>
+
+                <div class="active-filters" id="activeFilters"></div>
+            </div>
+
+            <div id="summary-section" class="summary-section">
+                <h2>📊 Summary</h2>
+                <div class="summary-text" id="summary-text">Loading...</div>
+            </div>
+
+            <div class="forms-container" id="forms-container"></div>
+        </div>
+
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <div class="info-banner">
+                <strong>ℹ️ No Forms Submitted Yet</strong>
+                <p style="margin: 10px 0 0 0;">This page displays LIVE DATA from all submitted forms.</p>
+                <p style="margin: 5px 0 0 0; font-size: 0.95rem;">Once forms are filled, they will appear here automatically.</p>
+            </div>
+            <div class="empty-state-icon">📭</div>
+            <h2>Waiting for Form Submissions</h2>
+            <p>Fill out VAC, Library, E-Content, Capacity, Teaching, Experiential, Learner Support, or PC forms to see them here.</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "/api";
+        let allData = {};
+        let filteredData = {};
+        let activeFilters = {};
+
+        document.addEventListener("DOMContentLoaded", () => {
+            checkAuth();
+            loadData();
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "/api/auth/login";
+            }
+        }
+
+        async function loadData() {
+            try {
+                document.getElementById("loading").style.display = "block";
+                document.getElementById("content-section").style.display = "none";
+                document.getElementById("empty-state").style.display = "none";
+
+                const response = await fetch(`${API_BASE}/consolidated-report/all`, {
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch data");
+                }
+
+                allData = await response.json();
+                document.getElementById("loading").style.display = "none";
+
+                if (allData.summary.grandTotal === 0) {
+                    document.getElementById("empty-state").style.display = "block";
+                    return;
+                }
+
+                renderSummary(allData.summary);
+                renderForms(allData);
+                document.getElementById("content-section").style.display = "block";
+            } catch (error) {
+                console.error("Error loading data:", error);
+                showMessage("Error loading data: " + error.message, "error");
+                document.getElementById("loading").style.display = "none";
+            }
+        }
+
+        function renderSummary(summary) {
+            const text = `
+                Total Submissions: <strong>${summary.grandTotal}</strong> | 
+                VAC: ${summary.totalVAC} | 
+                Library: ${summary.totalLibrary} | 
+                E-Content: ${summary.totalEContent} | 
+                Capacity: ${summary.totalCapacity} | 
+                Teaching: ${summary.totalTeaching} | 
+                Experiential: ${summary.totalExperiential} | 
+                Learner: ${summary.totalLearnerSupport} | 
+                PC: ${summary.totalPC}
+            `;
+            document.getElementById("summary-text").innerHTML = text;
+        }
+
+        function renderForms(data) {
+            let html = "";
+            let hasData = false;
+
+            // Render VAC Forms
+            if (data.vac && data.vac.length > 0) {
+                html += renderFormSection("VAC Forms", data.vac, "vac");
+                hasData = true;
+            }
+
+            // Render Library Forms
+            if (data.library && data.library.length > 0) {
+                html += renderFormSection("Library Forms", data.library, "library");
+                hasData = true;
+            }
+
+            // Render E-Content Forms
+            if (data.econtent && data.econtent.length > 0) {
+                html += renderFormSection("E-Content Forms", data.econtent, "econtent");
+                hasData = true;
+            }
+
+            // Render Capacity Forms
+            if (data.capacity && data.capacity.length > 0) {
+                html += renderFormSection("Capacity Forms", data.capacity, "capacity");
+                hasData = true;
+            }
+
+            // Render Teaching Forms
+            if (data.teaching && data.teaching.length > 0) {
+                html += renderFormSection("Teaching & Learning Forms", data.teaching, "teaching");
+                hasData = true;
+            }
+
+            // Render Experiential Forms
+            if (data.experiential && data.experiential.length > 0) {
+                html += renderFormSection("Experiential Forms", data.experiential, "experiential");
+                hasData = true;
+            }
+
+            // Render Learner Support Forms
+            if (data.learnerSupport && data.learnerSupport.length > 0) {
+                html += renderFormSection("Learner Support Forms", data.learnerSupport, "learner");
+                hasData = true;
+            }
+
+            // Render PC Forms
+            if (data.pc && data.pc.length > 0) {
+                html += renderFormSection("PC Forms", data.pc, "pc");
+                hasData = true;
+            }
+
+            if (!hasData) {
+                html = `<div style="text-align: center; padding: 40px; color: #999;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🔍</div>
+                    <p>No forms match the selected filters.</p>
+                </div>`;
+            }
+
+            document.getElementById("forms-container").innerHTML = html;
+        }
+
+        function renderFormSection(title, forms, formType) {
+            let html = `<div class="form-section">`;
+
+            forms.forEach((form, index) => {
+                html += `
+                    <div class="form-header">
+                        <span class="form-title">${title} #${index + 1}</span>
+                        <span class="form-badge">${formType.toUpperCase()}</span>
+                    </div>
+                    <div class="form-fields">
+                        ${renderFormFields(form)}
+                    </div>
+                `;
+
+                // Add separator between forms
+                if (index < forms.length - 1) {
+                    html += `<hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">`;
+                }
+            });
+
+            html += `</div>`;
+            return html;
+        }
+
+        function renderFormFields(form) {
+            let html = "";
+
+            // Special rendering for VAC entries which contain a `courses` array
+            if ((form.formType && form.formType.toUpperCase() === 'VAC') && Array.isArray(form.courses)) {
+                // show program id if present
+                if (form.program_Id) {
+                    html += `
+                        <div class="field">
+                            <label class="field-label">Program Id</label>
+                            <div class="field-value">${escapeHtml(form.program_Id)}</div>
+                        </div>
+                    `;
+                }
+
+                form.courses.forEach((course, idx) => {
+                    html += `
+                        <div style="margin:8px 0 18px; padding:12px; border-radius:6px; background:#fbfbfd; border:1px solid #eee;">
+                            <div style="font-weight:700; margin-bottom:8px; color:#333;">Course ${idx + 1}</div>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px;">
+                                ${renderFieldBlock('Course Name', course.courseName)}
+                                ${renderFieldBlock('Course Code', course.courseCode)}
+                                ${renderFieldBlock('Duration (Hours)', course.duration)}
+                                ${renderFieldBlock('Times Offered', course.timesOffered)}
+                                ${renderFieldBlock('Students Enrolled', course.studentsEnrolled)}
+                                ${renderFieldBlock('Students Completed', course.studentsCompleted)}
+                                ${renderFieldBlock('Brochure/Link', course.brochureLink)}
+                                ${renderFieldBlock('Coordinator', course.coordinator)}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // show uploadedFile or createdAt if available
+                if (form.uploadedFile) {
+                    html += `
+                        <div class="field">
+                            <label class="field-label">Uploaded File</label>
+                            <div class="field-value">${escapeHtml(form.uploadedFile)}</div>
+                        </div>
+                    `;
+                }
+                if (form.createdAt) {
+                    html += `
+                        <div class="field">
+                            <label class="field-label">Created At</label>
+                            <div class="field-value">${escapeHtml(new Date(form.createdAt).toLocaleString())}</div>
+                        </div>
+                    `;
+                }
+
+                return html;
+            }
+
+            // Generic rendering for other forms
+            const fieldsToShow = Object.keys(form)
+                .filter(key => !["_id", "__v", "id", "formType"].includes(key))
+                .sort();
+
+            fieldsToShow.forEach(key => {
+                const value = form[key];
+                const displayValue = formatFieldValue(value);
+                const isEmpty = value === null || value === undefined || value === "" || displayValue === "";
+
+                html += `
+                    <div class="field">
+                        <label class="field-label">${formatFieldName(key)}</label>
+                        <div class="field-value ${isEmpty ? 'empty' : ''}">
+                            ${isEmpty ? '------' : escapeHtml(displayValue)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            return html;
+        }
+
+        // Helper to render small field blocks used in course layout
+        function renderFieldBlock(label, value) {
+            const v = (value === null || value === undefined || value === '') ? '------' : escapeHtml(String(value));
+            return `
+                <div>
+                    <div class="field-label" style="font-size:12px; margin-bottom:6px;">${label}</div>
+                    <div class="field-value ${v === '------' ? 'empty' : ''}" style="padding:8px;">${v}</div>
+                </div>
+            `;
+        }
+
+        // Basic HTML escape
+        function escapeHtml(input) {
+            if (input === null || input === undefined) return '';
+            return String(input)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatFieldName(name) {
+            return name
+                .replace(/([A-Z])/g, " $1")
+                .replace(/^./, str => str.toUpperCase())
+                .replace(/_/g, " ")
+                .trim();
+        }
+
+        function formatFieldValue(value) {
+            if (value === null || value === undefined) return "";
+            if (typeof value === "object") {
+                if (Array.isArray(value)) {
+                    return value.map(item => 
+                        typeof item === "object" ? JSON.stringify(item) : String(item)
+                    ).join(", ");
+                }
+                return JSON.stringify(value);
+            }
+            return String(value).trim();
+        }
+
+        async function downloadPDF() {
+            try {
+                // Use html2pdf library
+                const element = document.querySelector(".forms-container");
+                const opt = {
+                    margin: 10,
+                    filename: `consolidated-forms-${new Date().toISOString().split("T")[0]}.pdf`,
+                    image: { type: "jpeg", quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { orientation: "portrait", unit: "mm", format: "a4" }
+                };
+
+                // Load html2pdf library if not already loaded
+                if (typeof html2pdf === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+                    script.onload = () => {
+                        html2pdf().set(opt).from(element).save();
+                        showMessage("PDF downloaded successfully!", "success");
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    html2pdf().set(opt).from(element).save();
+                    showMessage("PDF downloaded successfully!", "success");
+                }
+            } catch (error) {
+                console.error("Error downloading PDF:", error);
+                showMessage("Error downloading PDF: " + error.message, "error");
+            }
+        }
+
+        async function downloadCSV() {
+            try {
+                const response = await fetch(`${API_BASE}/consolidated-report/download-csv`, {
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to download CSV");
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `consolidated-forms-${new Date().toISOString().split("T")[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                showMessage("CSV downloaded successfully!", "success");
+            } catch (error) {
+                console.error("Error downloading CSV:", error);
+                showMessage("Error downloading CSV: " + error.message, "error");
+            }
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById("message-container");
+            const className = type === "error" ? "error-message" : "success-message";
+            container.innerHTML = `<div class="${className}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = "";
+            }, 5000);
+        }
+
+        function applyFilters() {
+            activeFilters = {
+                formType: document.getElementById("filterFormType").value,
+                semester: document.getElementById("filterSemester").value,
+                department: document.getElementById("filterDepartment").value,
+                programId: document.getElementById("filterProgramId").value.trim()
+            };
+
+            filteredData = filterData(allData, activeFilters);
+            renderSummary(getSummaryFromFiltered(filteredData));
+            renderForms(filteredData);
+            renderActiveFilters();
+        }
+
+        function filterData(data, filters) {
+            const result = {
+                vac: [],
+                library: [],
+                econtent: [],
+                capacity: [],
+                teaching: [],
+                experiential: [],
+                learnerSupport: [],
+                pc: []
+            };
+
+            const filterArray = (arr) => {
+                return arr.filter(item => {
+                    // Filter by form type
+                    if (filters.formType && item.formType !== filters.formType) return false;
+
+                    // Filter by semester (exact match)
+                    if (filters.semester) {
+                        const semValue = (item.semester || "").toString();
+                        if (semValue !== filters.semester) return false;
+                    }
+
+                    // Filter by department (exact match)
+                    if (filters.department) {
+                        const deptValue = (item.department || "").toString();
+                        if (deptValue !== filters.department) return false;
+                    }
+
+                    // Filter by program ID (partial match)
+                    if (filters.programId) {
+                        const progValue = (item.program_Id || item.programId || "").toString().toLowerCase();
+                        if (!progValue.includes(filters.programId.toLowerCase())) return false;
+                    }
+
+                    return true;
+                });
+            };
+
+            if (!filters.formType || filters.formType === "VAC") result.vac = filterArray(data.vac);
+            if (!filters.formType || filters.formType === "Library") result.library = filterArray(data.library);
+            if (!filters.formType || filters.formType === "E-Content") result.econtent = filterArray(data.econtent);
+            if (!filters.formType || filters.formType === "Capacity") result.capacity = filterArray(data.capacity);
+            if (!filters.formType || filters.formType === "Teaching & Learning") result.teaching = filterArray(data.teaching);
+            if (!filters.formType || filters.formType === "Experiential") result.experiential = filterArray(data.experiential);
+            if (!filters.formType || filters.formType === "Learner Support") result.learnerSupport = filterArray(data.learnerSupport);
+            if (!filters.formType || filters.formType === "PC") result.pc = filterArray(data.pc);
+
+            return result;
+        }
+
+        function getSummaryFromFiltered(data) {
+            return {
+                totalVAC: data.vac.length,
+                totalLibrary: data.library.length,
+                totalEContent: data.econtent.length,
+                totalCapacity: data.capacity.length,
+                totalTeaching: data.teaching.length,
+                totalExperiential: data.experiential.length,
+                totalLearnerSupport: data.learnerSupport.length,
+                totalPC: data.pc.length,
+                grandTotal: data.vac.length + data.library.length + data.econtent.length + data.capacity.length + 
+                           data.teaching.length + data.experiential.length + data.learnerSupport.length + data.pc.length
+            };
+        }
+
+        function clearFilters() {
+            document.getElementById("filterFormType").value = "";
+            document.getElementById("filterSemester").value = "";
+            document.getElementById("filterDepartment").value = "";
+            document.getElementById("filterProgramId").value = "";
+            
+            activeFilters = {};
+            filteredData = allData;
+            renderSummary(allData.summary);
+            renderForms(allData);
+            renderActiveFilters();
+        }
+
+        function renderActiveFilters() {
+            const container = document.getElementById("activeFilters");
+            const filters = [];
+
+            if (activeFilters.formType) filters.push({ label: "Form Type", value: activeFilters.formType });
+            if (activeFilters.semester) filters.push({ label: "Semester", value: `Semester ${activeFilters.semester}` });
+            if (activeFilters.department) filters.push({ label: "Department", value: activeFilters.department });
+            if (activeFilters.programId) filters.push({ label: "Program ID", value: activeFilters.programId });
+
+            if (filters.length === 0) {
+                container.innerHTML = "";
+                return;
+            }
+
+            let html = "<strong style='display: block; margin-bottom: 10px; color: #555;'>Active Filters:</strong>";
+            filters.forEach((filter, index) => {
+                html += `
+                    <div class="filter-tag">
+                        <span><strong>${filter.label}:</strong> ${filter.value}</span>
+                        <span class="filter-tag-close" onclick="removeFilter('${filter.label}')">×</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function removeFilter(filterName) {
+            switch(filterName) {
+                case "Form Type":
+                    document.getElementById("filterFormType").value = "";
+                    activeFilters.formType = "";
+                    break;
+                case "Semester":
+                    document.getElementById("filterSemester").value = "";
+                    activeFilters.semester = "";
+                    break;
+                case "Department":
+                    document.getElementById("filterDepartment").value = "";
+                    activeFilters.department = "";
+                    break;
+                case "Program ID":
+                    document.getElementById("filterProgramId").value = "";
+                    activeFilters.programId = "";
+                    break;
+            }
+            applyFilters();
+        }
+
+        function logout() {
+            localStorage.removeItem("token");
+            window.location.href = "/api/auth/login";
+        }
+    </script>
+</body>
+</html>
