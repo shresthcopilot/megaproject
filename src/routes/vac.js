@@ -4,20 +4,30 @@ import Student from "../models/vac-form-model.js";
 import VacEntry from "../models/vac-model.js";
 import { authMiddleware } from "../middleware/auth-middleware.js";
 import { upload } from "../middleware/multer-middleware.js";
+import PDFDocument from "pdfkit";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const router = express.Router();
 
 async function readSubmissions() {
   if (
-    !mongoose || !mongoose.connection || mongoose.connection.readyState !== 1
+    !mongoose ||
+    !mongoose.connection ||
+    mongoose.connection.readyState !== 1
   ) {
     throw new Error("DB not connected");
   }
   const docs = await Student.find({}).lean().exec();
   return docs.map((d) => ({
     id: d._id.toString(),
-    createdAt: d
-      .timestamp ? new Date(d.timestamp).toISOString() : d.createdAt || new Date().toISOString(), ...d,
+    createdAt: d.timestamp
+      ? new Date(d.timestamp).toISOString()
+      : d.createdAt || new Date().toISOString(),
+    ...d,
   }));
 }
 
@@ -27,7 +37,9 @@ async function readEntries() {
   const docs = await VacEntry.find({}).lean().exec();
   return docs.map((d) => ({
     id: d._id.toString(),
-    createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+    createdAt: d.createdAt
+      ? new Date(d.createdAt).toISOString()
+      : new Date().toISOString(),
     programmeCode: d.programmeCode || "",
     program_Id: d.program_Id || "",
     ...d,
@@ -41,62 +53,74 @@ async function readEntryById(id) {
   if (!doc) return null;
   return {
     id: doc._id.toString(),
-    createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : new Date().toISOString(), ...doc,
+    createdAt: doc.createdAt
+      ? new Date(doc.createdAt).toISOString()
+      : new Date().toISOString(),
+    ...doc,
   };
 }
 
-router.post("/submissions", upload.single("certificateUpload"), async (req, res) => {
-  try {
-    const payload = req.body || {};
-    if (!payload || Object.keys(payload).length === 0)
-      return res.status(400).json({ error: "Empty payload" });
-
-    // require DB
-    if (
-      !mongoose || !mongoose.connection || mongoose.connection.readyState !== 1
-    ) {
-      return res.status(503).json({ error: "DB not connected" });
-    }
-
-    const doc = new Student({
-      vacId: payload.vacId || "",
-      program_Id: payload.program_Id || payload.programId || "",
-      studentName: payload.studentName || "",
-      department: payload.department || "",
-      level: payload.level || "",
-      course: payload.course || payload.courseSelect || "",
-      semester: payload.semester ? Number(payload.semester) : "",
-      enrollmentNumber: payload.enrollmentNumber || payload.enrollmentNo || "",
-      phoneNumber: payload.phoneNumber || payload.phone || "",
-      courseCompleted: payload.courseCompleted || "",
-      sectionSelect: payload.sectionSelect || "",
-      courseSelect: payload.courseSelect || "",
-      certificateFilename: (req.file && req.file.filename) || payload.certificateFilename || "",
-    });
-
+router.post(
+  "/submissions",
+  upload.single("certificateUpload"),
+  async (req, res) => {
     try {
-      const saved = await doc.save();
-      return res.json({ ok: true, id: saved._id.toString() });
+      const payload = req.body || {};
+      if (!payload || Object.keys(payload).length === 0)
+        return res.status(400).json({ error: "Empty payload" });
+
+      // require DB
+      if (
+        !mongoose ||
+        !mongoose.connection ||
+        mongoose.connection.readyState !== 1
+      ) {
+        return res.status(503).json({ error: "DB not connected" });
+      }
+
+      const doc = new Student({
+        vacId: payload.vacId || "",
+        program_Id: payload.program_Id || payload.programId || "",
+        studentName: payload.studentName || "",
+        department: payload.department || "",
+        level: payload.level || "",
+        course: payload.course || payload.courseSelect || "",
+        semester: payload.semester ? Number(payload.semester) : "",
+        enrollmentNumber:
+          payload.enrollmentNumber || payload.enrollmentNo || "",
+        phoneNumber: payload.phoneNumber || payload.phone || "",
+        courseCompleted: payload.courseCompleted || "",
+        sectionSelect: payload.sectionSelect || "",
+        courseSelect: payload.courseSelect || "",
+        certificateFilename: req.file ? req.file.filename : "",
+        certificatePath: req.file
+          ? `/uploads/certificates/${req.file.filename}`
+          : "",
+      });
+
+      try {
+        const saved = await doc.save();
+        return res.json({ ok: true, id: saved._id.toString() });
+      } catch (err) {
+        if (err && err.code === 11000)
+          return res.status(409).json({ error: "Duplicate enrollment number" });
+
+        if (err && err.name === "ValidationError")
+          return res
+            .status(400)
+            .json({ error: "Validation Error", details: err.message });
+
+        console.error("Error saving submission to DB", err);
+
+        return res.status(500).json({ error: "Failed to save to DB" });
+      }
+    } catch (err) {
+      console.error("Error saving submission", err);
+
+      res.status(500).json({ error: "Failed to save submission" });
     }
-    catch (err) {
-      if (err && err.code === 11000)
-        return res.status(409).json({ error: "Duplicate enrollment number" });
-
-      if (err && err.name === "ValidationError")
-        return res
-          .status(400)
-          .json({ error: "Validation Error", details: err.message });
-
-      console.error("Error saving submission to DB", err);
-
-      return res.status(500).json({ error: "Failed to save to DB" });
-    }
-  } catch (err) {
-    console.error("Error saving submission", err);
-
-    res.status(500).json({ error: "Failed to save submission" });
-  }
-});
+  },
+);
 
 router.get("/submissions", authMiddleware, async (req, res) => {
   try {
@@ -118,7 +142,10 @@ router.get("/submissions", authMiddleware, async (req, res) => {
       .exec();
     const submissions = subs.map((d) => ({
       id: d._id.toString(),
-      createdAt: d.timestamp ? new Date(d.timestamp).toISOString() : d.createdAt || new Date().toISOString(), ...d,
+      createdAt: d.timestamp
+        ? new Date(d.timestamp).toISOString()
+        : d.createdAt || new Date().toISOString(),
+      ...d,
     }));
     res.json(submissions);
   } catch (err) {
@@ -127,44 +154,156 @@ router.get("/submissions", authMiddleware, async (req, res) => {
   }
 });
 
-function toCSV(rows) {
-  if (!Array.isArray(rows) || rows.length === 0) return "";
-  const keys = Array.from(
-    rows.reduce((acc, r) => {
-      Object.keys(r).forEach((k) => acc.add(k));
-      return acc;
-    }, new Set())
-  );
+// function toCSV(rows) {
+//   if (!Array.isArray(rows) || rows.length === 0) return "";
+//   const keys = Array.from(
+//     rows.reduce((acc, r) => {
+//       Object.keys(r).forEach((k) => acc.add(k));
+//       return acc;
+//     }, new Set()),
+//   );
 
-  const escape = escapeCsvValue;
+//   const escape = escapeCsvValue;
 
-  const header = keys.join(",");
+//   const header = keys.join(",");
 
-  const lines = rows.map((r) => keys.map((k) => escape(r[k])).join(","));
+//   const lines = rows.map((r) => keys.map((k) => escape(r[k])).join(","));
 
-  return [header, ...lines].join("\n");
-}
+//   return [header, ...lines].join("\n");
+// }
 
-function escapeCsvValue(v) {
-  if (v === null || v === undefined) return "";
-  const raw = typeof v === "object" ? JSON.stringify(v) : String(v);
-  return raw.includes(",") || raw.includes("\n") || raw.includes('"') ? '"' + raw.replace(/"/g, '""') + '"' : raw;
-}
+// function escapeCsvValue(v) {
+//   if (v === null || v === undefined) return "";
+//   const raw = typeof v === "object" ? JSON.stringify(v) : String(v);
+//   return raw.includes(",") || raw.includes("\n") || raw.includes('"')
+//     ? '"' + raw.replace(/"/g, '""') + '"'
+//     : raw;
+// }
 
 router.get("/download", authMiddleware, async (req, res) => {
   try {
     const submissions = await readSubmissions();
-    const csv = toCSV(submissions);
-    res.setHeader("Content-Type", "text/csv");
+
+    if (!submissions || submissions.length === 0) {
+      return res.status(404).json({ error: "No submissions found" });
+    }
+
+    // Set headers for PDF download
+    res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      'attachment; filename="vac_submissions.csv"'
+      `attachment; filename="vac_submissions_${Date.now()}.pdf"`,
     );
-    res.send(csv);
-  } catch (err) {
-    console.error("Error building CSV", err);
 
-    res.status(500).json({ error: "Failed to generate CSV" });
+    const doc = new PDFDocument({
+      margin: 40,
+      size: "A4",
+    });
+
+    // Stream directly to response (production safe)
+    doc.pipe(res);
+
+    // Title
+    doc
+      .fontSize(18)
+      .text("VAC Submissions Report", { align: "center" })
+      .moveDown(2);
+
+   submissions.forEach((submission, index) => {
+
+  doc.fontSize(14)
+     .text(`Submission ${index + 1}`, { underline: true })
+     .moveDown(0.5);
+
+  doc.fontSize(12);
+
+  doc.text(`Student Name: ${submission.studentName || "-"}`);
+  doc.text(`Department: ${submission.department || "-"}`);
+  doc.text(`Level: ${submission.level || "-"}`);
+  doc.text(`Course: ${submission.course || "-"}`);
+  doc.text(`Semester: ${submission.semester || "-"}`);
+  doc.text(`Enrollment Number: ${submission.enrollmentNumber || "-"}`);
+  doc.text(`Phone Number: ${submission.phoneNumber || "-"}`);
+  doc.text(`Course Completed: ${submission.courseCompleted || "-"}`);
+  doc.text(
+    `Submitted On: ${
+      submission.createdAt
+        ? new Date(submission.createdAt).toLocaleString()
+        : "-"
+    }`
+  );
+
+  doc.moveDown(1);
+
+  // =========================
+  // CERTIFICATE IMAGE SECTION
+  // =========================
+
+  if (submission.certificateFilename) {
+
+    const uploadsDir = path.join(
+      process.cwd(),
+      "uploads",
+      "certificates"
+    );
+
+    const fullPath = path.join(
+      uploadsDir,
+      submission.certificateFilename
+    );
+
+    console.log("Checking certificate:", fullPath);
+
+    if (fs.existsSync(fullPath)) {
+
+      const ext = path.extname(fullPath).toLowerCase();
+
+      if ([".jpg", ".jpeg", ".png"].includes(ext)) {
+
+        doc.text("Certificate:");
+        doc.moveDown(0.5);
+
+        doc.image(fullPath, {
+          fit: [350, 250],
+          align: "left"
+        });
+
+        doc.moveDown(1);
+
+      } else if (ext === ".pdf") {
+
+        doc.text("Certificate File (PDF uploaded)");
+        doc.text(`File Name: ${submission.certificateFilename}`);
+        doc.moveDown(1);
+
+      } else {
+
+        doc.text("Unsupported certificate format.");
+        doc.moveDown(1);
+      }
+
+    } else {
+
+      doc.text("Certificate file not found on server.");
+      doc.moveDown(1);
+    }
+
+  } else {
+
+    doc.text("No certificate uploaded.");
+    doc.moveDown(1);
+  }
+
+  if (index < submissions.length - 1) {
+    doc.addPage();
+  }
+
+});
+
+    doc.end();
+  } catch (err) {
+    console.error("Error building PDF", err);
+    res.status(500).json({ error: "Failed to generate PDF" });
   }
 });
 
@@ -173,28 +312,32 @@ router.post("/entries", authMiddleware, async (req, res) => {
   try {
     const payload = req.body; // should include courses array and metadata
     if (!payload || Object.keys(payload).length === 0)
-      return res
-        .status(400)
-        .json({ error: "Empty payload" });
+      return res.status(400).json({ error: "Empty payload" });
 
-    if (!mongoose || !mongoose.connection || mongoose.connection.readyState !== 1
+    if (
+      !mongoose ||
+      !mongoose.connection ||
+      mongoose.connection.readyState !== 1
     )
-      return res
-        .status(503)
-        .json({ error: "DB not connected" });
+      return res.status(503).json({ error: "DB not connected" });
 
     const doc = new VacEntry({
       courses: Array.isArray(payload.courses) ? payload.courses : [],
       createdBy: req.user?.id,
       uploadedFile: req.file ? req.file.filename : null,
-      programmeCode: payload.programmeCode ? String(payload.programmeCode).trim().toUpperCase() : (payload.programme_code || ""),
+      programmeCode: payload.programmeCode
+        ? String(payload.programmeCode).trim().toUpperCase()
+        : payload.programme_code || "",
       program_Id: payload.program_Id || payload.programId || "",
     });
 
     const saved = await doc.save();
-    res.json({ ok: true, id: saved._id.toString(), uploadedFile: saved.uploadedFile });
-  }
-  catch (err) {
+    res.json({
+      ok: true,
+      id: saved._id.toString(),
+      uploadedFile: saved.uploadedFile,
+    });
+  } catch (err) {
     console.error("Error saving entry", err);
     res.status(500).json({ error: "Failed to save entry" });
   }
@@ -205,25 +348,22 @@ router.get("/entries", authMiddleware, async (req, res) => {
     // Admins see all entries; other users only see their own created entries
     if (req.user && req.user.role === "admin") {
       const entries = await readEntries();
-      return res
-        .json(entries);
+      return res.json(entries);
     }
 
     // for non-admins, query DB for entries created by the user
     const docs = await VacEntry.find({ createdBy: req.user?.id }).lean().exec();
     const entries = docs.map((d) => ({
       id: d._id.toString(),
-      createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(), ...d,
+      createdAt: d.createdAt
+        ? new Date(d.createdAt).toISOString()
+        : new Date().toISOString(),
+      ...d,
     }));
-    return res
-      .json(entries);
-
-  }
-  catch (err) {
+    return res.json(entries);
+  } catch (err) {
     console.error("Error reading entries", err);
-    res
-      .status(500)
-      .json({ error: "Failed to read entries" });
+    res.status(500).json({ error: "Failed to read entries" });
   }
 });
 
@@ -245,54 +385,41 @@ router.get("/entries/:id", authMiddleware, async (req, res) => {
     res.json(entry);
   } catch (err) {
     console.error("Error reading entry", err);
-    res
-      .status(500)
-      .json({ error: "Failed to read entry" });
+    res.status(500).json({ error: "Failed to read entry" });
   }
 });
 
 router.delete("/entries/:id", authMiddleware, async (req, res) => {
   try {
     const id = req.params.id;
-    if (!id)
-      return res
-        .status(400)
-        .json({ error: "Missing id" });
+    if (!id) return res.status(400).json({ error: "Missing id" });
 
-    if (!mongoose || !mongoose.connection || mongoose.connection.readyState !== 1)
-      return res
-        .status(503)
-        .json({ error: "DB not connected" });
+    if (
+      !mongoose ||
+      !mongoose.connection ||
+      mongoose.connection.readyState !== 1
+    )
+      return res.status(503).json({ error: "DB not connected" });
 
     // enforce owner or admin
 
     const entryDoc = await VacEntry.findById(id).exec();
-    if (!entryDoc)
-      return res
-        .status(404)
-        .json({ error: "Not found" });
+    if (!entryDoc) return res.status(404).json({ error: "Not found" });
 
     if (
-      req.user.role !== "admin" && String(entryDoc.createdBy || "") !== String(req.user.id)
+      req.user.role !== "admin" &&
+      String(entryDoc.createdBy || "") !== String(req.user.id)
     )
-      return res
-        .status(403)
-        .json({ error: "Forbidden" });
+      return res.status(403).json({ error: "Forbidden" });
 
     const r = await VacEntry.findByIdAndDelete(id).exec();
 
-    if (!r)
-      return res
-        .status(404)
-        .json({ error: "Not found" });
+    if (!r) return res.status(404).json({ error: "Not found" });
 
     res.json({ ok: true });
-  }
-  catch (err) {
+  } catch (err) {
     console.error("Error deleting entry", err);
-    res
-      .status(500)
-      .json({ error: "Failed to delete entry" });
+    res.status(500).json({ error: "Failed to delete entry" });
   }
 });
 
@@ -300,258 +427,289 @@ router.delete("/entries/:id", authMiddleware, async (req, res) => {
 router.post("/entries/:id/send", authMiddleware, async (req, res) => {
   try {
     const id = req.params.id;
-    if (!id)
-      return res
-        .status(400)
-        .json({ error: "Missing id" });
+    if (!id) return res.status(400).json({ error: "Missing id" });
 
-    if (!mongoose || !mongoose.connection || mongoose.connection.readyState !== 1)
+    if (
+      !mongoose ||
+      !mongoose.connection ||
+      mongoose.connection.readyState !== 1
+    )
       return res.status(503).json({ error: "DB not connected" });
 
     const entry = await VacEntry.findById(id).exec();
-    if (!entry)
-      return res
-        .status(404)
-        .json({ error: "Not found" });
+    if (!entry) return res.status(404).json({ error: "Not found" });
 
     // only admin or owner can send
     if (
       req.user.role !== "admin" &&
       String(entry.createdBy || "") !== String(req.user.id)
     )
-      return res
-        .status(403)
-        .json({ error: "Forbidden" });
+      return res.status(403).json({ error: "Forbidden" });
 
     // get linked student submissions (submitted with vacId set)
 
-    const matchedStudents = await Student
-      .find({ vacId: id })
-      .lean()
-      .exec();
+    const matchedStudents = await Student.find({ vacId: id }).lean().exec();
 
-    entry.studentCount = Array.isArray(matchedStudents) ? matchedStudents.length : 0;
+    entry.studentCount = Array.isArray(matchedStudents)
+      ? matchedStudents.length
+      : 0;
     entry.sentToCoordinator = true;
     entry.sentToCoordinatorAt = new Date();
     await entry.save();
 
     // Do not attach full students to the entry response to protect privacy
     res.json({ ok: true, id, studentCount: entry.studentCount });
-
-  }
-  catch (err) {
+  } catch (err) {
     console.error("Error sending entry", err);
-    res
-      .status(500)
-      .json({ error: "Failed to send" });
+    res.status(500).json({ error: "Failed to send" });
   }
 });
 
-// download CSV for all entries
+// download PDF for all students (admin only)
 router.get("/entries/download", authMiddleware, async (req, res) => {
   try {
-    // only admins can download all entries
-    if (!req.user || req.user.role !== "admin")
-      return res
-        .status(403)
-        .json({ error: "Forbidden" });
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ error: "Forbidden" });
+    }
 
-    const entries = await readEntries();
+    const students = await Student.find({})
+      .select("-_id -vacId -__v") // ✅ remove Mongo fields
+      .lean()
+      .exec();
 
-    const csv = toCSV(entries);
+    if (!students.length) {
+      return res.status(404).json({ error: "No students found" });
+    }
 
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", 'attachment; filename="vac_entries.csv"');
-    res.send(csv);
-  }
-  catch (err) {
-    console.error("Error building entries CSV", err);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="vac_students_report_${Date.now()}.pdf"`,
+    );
 
-    res
-      .status(500)
-      .json({ error: "Failed to generate CSV" });
+    const doc = new PDFDocument({
+      size: "A4",
+      margin: 40,
+      bufferPages: true,
+    });
+
+    doc.pipe(res);
+
+    // ===== TITLE =====
+    doc
+      .fontSize(20)
+      .text("VAC Student Report", { align: "center" })
+      .moveDown(1);
+
+    doc
+      .fontSize(12)
+      .text(`Generated On: ${new Date().toLocaleString()}`)
+      .moveDown(2);
+
+    students.forEach((s, index) => {
+      doc
+        .fontSize(14)
+        .text(`Student ${index + 1}`, { underline: true })
+        .moveDown(0.5);
+
+      doc.fontSize(12);
+
+      // ✅ Only clean fields
+      doc.text(`Program ID: ${s.program_Id || "-"}`);
+      doc.text(`Name: ${s.studentName || "-"}`);
+      doc.text(`Department: ${s.department || "-"}`);
+      doc.text(`Level: ${s.level || "-"}`);
+      doc.text(`Course: ${s.course || "-"}`);
+      doc.text(`Semester: ${s.semester || "-"}`);
+      doc.text(`Enrollment Number: ${s.enrollmentNumber || "-"}`);
+      doc.text(`Phone Number: ${s.phoneNumber || "-"}`);
+      doc.text(`Course Completed: ${s.courseCompleted || "-"}`);
+      doc.text(
+        `Submitted On: ${
+          s.createdAt ? new Date(s.createdAt).toLocaleDateString() : "-"
+        }`,
+      );
+
+      doc.moveDown(1);
+
+      // ===== CERTIFICATE SECTION =====
+      if (s.certificateFilename) {
+        const uploadsDir = path.join(process.cwd(), "uploads", "certificates");
+
+        const fullPath = path.join(uploadsDir, s.certificateFilename);
+
+        if (fs.existsSync(fullPath)) {
+          const ext = path.extname(fullPath).toLowerCase();
+
+          // 🖼 IMAGE CERTIFICATE
+          if (ext === ".jpg" || ext === ".jpeg" || ext === ".png") {
+            doc.text("Certificate:");
+            doc.moveDown(0.5);
+
+            doc.image(fullPath, {
+              fit: [350, 250],
+              align: "left",
+            });
+
+            doc.moveDown(1);
+          }
+
+          // 📄 PDF CERTIFICATE
+          else if (ext === ".pdf") {
+            doc.text("Certificate File (PDF Attached Separately):");
+            doc.text(`Filename: ${s.certificateFilename}`);
+            doc.text("Note: PDF certificates cannot be embedded directly.");
+            doc.moveDown(1);
+          } else {
+            doc.text("Unsupported certificate format.");
+          }
+        } else {
+          doc.text("Certificate file not found on server.");
+        }
+      } else {
+        doc.text("No certificate uploaded.");
+      }
+
+      if (index < students.length - 1) {
+        doc.addPage();
+      }
+    });
+
+    // ===== SUMMARY PAGE =====
+    doc.addPage();
+    doc.fontSize(14).text("Summary", { underline: true }).moveDown(1);
+
+    doc.text(`Total Students: ${students.length}`);
+
+    doc.end();
+  } catch (err) {
+    console.error("PDF generation error:", err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Failed to generate PDF" });
+    }
   }
 });
 
 // download combined CSV for a single entry (courses + students)
+
 router.get("/entries/:id/download", authMiddleware, async (req, res) => {
   try {
     const id = req.params.id;
 
     const entry = await readEntryById(id);
+    if (!entry) return res.status(404).json({ error: "Not found" });
 
-    if (!entry)
-      return res
-        .status(404)
-        .json({ error: "Not found" });
-
-    // only admin or owner may download per-entry CSV
     if (
       req.user.role !== "admin" &&
       String(entry.createdBy || "") !== String(req.user.id)
-    )
-      return res
-        .status(403)
-        .json({ error: "Forbidden" });
-
-    // build two sections: courses and students
-    let csvParts = [];
-    if (Array.isArray(entry.courses) && entry.courses.length) {
-      csvParts.push(
-        "section,entryId,createdAt,index,courseName,courseCode,duration,timesOffered,studentsEnrolled,studentsCompleted,brochureLink,coordinator"
-      );
-
-      entry.courses.forEach((c, i) => {
-        const row = ["VAC",
-          entry.id,
-          entry.createdAt || "",
-          i + 1,
-          c.courseName || "",
-          c.courseCode || "",
-          c.duration || "",
-          c.timesOffered || "",
-          c.studentsEnrolled || "",
-          c.studentsCompleted || "",
-          c.brochureLink || "",
-          c.coordinator || "",
-        ];
-
-        csvParts.push(row.map((v) => escapeCsvValue(v)).join(","));
-      });
-
-    }
-    else {
-      csvParts.push("section,entryId,createdAt,note");
-      csvParts.push(
-        ["VAC", entry.id, entry.createdAt || "", "no courses"]
-          .map((v) => escapeCsvValue(v))
-          .join(",")
-      );
+    ) {
+      return res.status(403).json({ error: "Forbidden" });
     }
 
-    // students
-    csvParts.push("");
-    csvParts.push(
-      "section,entryId,createdAt,studentName,enrollmentNumber,phoneNumber,courseSelect,certificateFilename"
-    );
-    // for per-entry students, query the Student collection for any submissions referencing this entry by vacId
-    const students = await Student
-      .find({ vacId: id })
+    const students = await Student.find({ vacId: id })
+      .select("-_id -vacId -__v")
       .lean()
       .exec();
 
-    students.forEach((s) => {
-      const row = ["STUDENT",
-        entry.id,
-        entry.createdAt || "",
-        s.studentName || "",
-        s.enrollmentNumber || "",
-        s.phoneNumber || "",
-        s.courseSelect || "",
-        s.certificateFilename || "",
-      ];
-      csvParts.push(row.map((v) => escapeCsvValue(v)).join(","));
-    });
-
-    const out = csvParts.join("\n");
-    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="vac_entry_${id}.csv"`
+      `attachment; filename="vac_entry_${id}.pdf"`,
     );
 
-    res.send(out);
+    const doc = new PDFDocument({ margin: 40 });
+    doc.pipe(res);
 
-  }
-  catch (err) {
-    console.error("Error building entry CSV", err);
-    res
-      .status(500)
-      .json({ error: "Failed to generate entry csv" });
+    doc.fontSize(18).text("VAC Entry Report", { align: "center" });
+    doc.moveDown();
+
+    doc.text(`Programme Code: ${entry.programmeCode || "-"}`);
+    doc.text(`Program ID: ${entry.program_Id || "-"}`);
+    doc.text(`Created At: ${entry.createdAt}`);
+    doc.moveDown(2);
+
+    doc.fontSize(14).text("Students:", { underline: true });
+    doc.moveDown();
+
+    if (!students.length) {
+      doc.text("No students found.");
+    } else {
+      students.forEach((s, index) => {
+        doc.text(`Student ${index + 1}`);
+        doc.text(`Name: ${s.studentName}`);
+        doc.text(`Enrollment: ${s.enrollmentNumber}`);
+        doc.text(`Course: ${s.course}`);
+        doc.text(`Semester: ${s.semester}`);
+        doc.moveDown();
+      });
+    }
+
+    doc.end();
+  } catch (err) {
+    console.error("Error generating PDF", err);
+    res.status(500).json({ error: "Failed to generate PDF" });
   }
 });
 
 router.delete("/submissions/:id", authMiddleware, async (req, res) => {
   try {
     const id = req.params.id;
-    if (!id)
-      return
-    res.status(400)
-      .json({ error: "Missing id" });
+    if (!id) return;
+    res.status(400).json({ error: "Missing id" });
 
     // require DB connection for deletions
 
-    if (!mongoose || !mongoose.connection || mongoose.connection.readyState !== 1) {
-      return res
-        .status(503)
-        .json({ error: "DB not connected" });
+    if (
+      !mongoose ||
+      !mongoose.connection ||
+      mongoose.connection.readyState !== 1
+    ) {
+      return res.status(503).json({ error: "DB not connected" });
     }
 
     const stud = await Student.findById(id).exec();
-    if (!stud)
-      return res
-        .status(404)
-        .json({ error: "Not found" });
+    if (!stud) return res.status(404).json({ error: "Not found" });
 
     // owner check: if not admin, ensure entry owner matches user
     if (req.user.role !== "admin" && stud.vacId) {
-      const entry = await VacEntry
-        .findById(stud.vacId)
-        .exec();
+      const entry = await VacEntry.findById(stud.vacId).exec();
 
       if (!entry || String(entry.createdBy || "") !== String(req.user.id))
-        return res
-          .status(403)
-          .json({ error: "Forbidden" });
+        return res.status(403).json({ error: "Forbidden" });
     }
 
     const r = await Student.findByIdAndDelete(id).exec();
 
-    return res
-      .json({ ok: true });
-  }
-  catch (err) {
+    return res.json({ ok: true });
+  } catch (err) {
     console.error("Error deleting submission", err);
-    res
-      .status(500)
-      .json({ error: "Failed to delete submission" });
+    res.status(500).json({ error: "Failed to delete submission" });
   }
 });
 
 // mark a submission as sent to program coordinator
 router.post("/submissions/:id/send", authMiddleware, async (req, res) => {
   try {
-    const id = req
-      .params
-      .id;
-    if (!id)
-      return res
-        .status(400)
-        .json({ error: "Missing id" });
+    const id = req.params.id;
+    if (!id) return res.status(400).json({ error: "Missing id" });
     // require DB connection
-    if (!mongoose || !mongoose.connection || mongoose.connection.readyState !== 1
+    if (
+      !mongoose ||
+      !mongoose.connection ||
+      mongoose.connection.readyState !== 1
     )
-      return res
-        .status(503)
-        .json({ error: "DB not connected" });
+      return res.status(503).json({ error: "DB not connected" });
 
     const s = await Student.findById(id).exec();
 
-    if (!s)
-      return res
-        .status(404)
-        .json({ error: "Not found" });
+    if (!s) return res.status(404).json({ error: "Not found" });
 
     // owner check: only admin or owner of the associated entry can send
     if (req.user.role !== "admin" && s.vacId) {
-      const entry = await VacEntry
-        .findById(s.vacId)
-        .exec();
+      const entry = await VacEntry.findById(s.vacId).exec();
 
       if (!entry || String(entry.createdBy || "") !== String(req.user.id))
-        return res
-          .status(403)
-          .json({ error: "Forbidden" });
+        return res.status(403).json({ error: "Forbidden" });
     }
 
     s.sentToCoordinator = true;
@@ -559,12 +717,9 @@ router.post("/submissions/:id/send", authMiddleware, async (req, res) => {
     await s.save();
 
     res.json({ ok: true, id });
-  }
-  catch (err) {
+  } catch (err) {
     console.error("Error sending submission", err);
-    res
-      .status(500)
-      .json({ error: "Failed to mark sent" });
+    res.status(500).json({ error: "Failed to mark sent" });
   }
 });
 

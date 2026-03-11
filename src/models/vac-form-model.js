@@ -1,52 +1,80 @@
 import mongoose from "mongoose";
 
 const studentSchema = new mongoose.Schema({
-    vacId: {
-        type: String,
-        required: false,
-        unique: true
-    },
-    program_Id: {
-        type: String,
-        default: ""
-    },
-    studentName: {
-        type: String,
-        required: true
-    },
-    enrollmentNumber: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    phoneNumber: {
-        type: String,
-        required: true,
-        match: /^\d{10}$/
-    },
-    courseCompleted: {
-        type: String,
-        required: true,
-        enum: ["Yes", "No"]
-    },
-    sectionSelect: {
-        type: String,
-        required: true,
-        enum: ["A", "B", "C", "D"]
-    },
-    courseSelect: {
-        type: String,
-        required: true,
-        enum: ["BBA", "BCA", "B.COM", "MBA FT"],
-    },
-    certificateFilename: {
-        type: String,
-        required: true
-    },
-    timestamp: {
-        type: Date,
-        default: Date.now
-    },
+  vacId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "VacEntry",
+    required: false,
+  },
+
+  program_Id: {
+    type: String,
+    default: "",
+    trim: true,
+  },
+
+  studentName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+
+  department: {
+    type: String,
+    required: true,
+    enum: ["IT", "Management", "Commerce", "Law"],
+  },
+
+  level: {
+    type: String,
+    required: true,
+    enum: ["UG", "PG"],
+  },
+
+  course: {
+    type: String,
+    required: true,
+    enum: ["BCA", "MCA", "BBA", "MBA", "B.Com", "LLB", "LLM"],
+  },
+
+  semester: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 10,
+  },
+
+  enrollmentNumber: {
+    type: String,
+    required: true,
+    
+    trim: true,
+  },
+
+  phoneNumber: {
+    type: String,
+    required: true,
+    match: /^\d{10}$/,
+  },
+
+  courseCompleted: {
+    type: String,
+    required: true,
+    enum: ["Yes", "No"],
+  },
+
+  certificateFilename: {
+    type: String,
+    default: "",
+  },
+  certificatePath: {
+  type: String,
+},
+
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 const Student =

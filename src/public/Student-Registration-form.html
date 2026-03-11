@@ -125,7 +125,7 @@
 
       <div class="col">
         <label>Course *</label>
-        <select id="course" name="course" disabled required>
+        <select id="course" name="courseSelect" disabled required>
           <option value="" disabled selected>Select Course</option>
         </select>
       </div>
@@ -133,17 +133,11 @@
 
     <div class="row">
       <div class="col">
-        <label>Semester *</label>
-        <select name="semester" required>
-          <option value="" disabled selected>Select Semester</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-        </select>
-      </div>
+  <label>Semester *</label>
+  <select name="semester" id="semester" required>
+    <option value="" disabled selected>Select Semester</option>
+  </select>
+</div>
 
       <div class="col">
         <label>Enrollment Number *</label>
@@ -161,34 +155,37 @@
     </div>
 
     <label>Upload Certificate</label>
-    <input type="file" name="certificate">
+    <input type="file" name="certificateUpload">
 
     <button type="submit">Submit</button>
   </form>
 </div>
 
-<<<<<<< HEAD
-  <script>
-    const popup = document.getElementById("popup");
-=======
 <div class="popup" id="popup">
   <h2>Thank You!</h2>
   <p>Your form has been submitted successfully.</p>
   <button onclick="closePopup()">OK</button>
 </div>
->>>>>>> ad771697c6324feac906f78e67776abf85bd7b39
 
 <script>
   const courseMap = new Map([
     ["IT-UG", "BCA"],
     ["IT-PG", "MCA"],
     ["Management-UG", "BBA"],
-    ["Management-PG", "MBA"],
-    ["Commerce-UG", "B.Com"],
+    ["Management-PG", "MBA FT"],
+    ["Commerce-UG", "B.COM"],
     ["Law-UG", "LLB"],
     ["Law-PG", "LLM"]
   ]);
-
+const semesterMap = new Map([
+  ["BCA", 6],
+  ["B.COM", 6],
+  ["BBA", 6],
+  ["LLM", 6],
+  ["MBA FT", 4],
+  ["MCA", 3],
+  ["LLB", 10]
+]);
   const dept = document.getElementById("dept");
   const level = document.getElementById("level");
   const course = document.getElementById("course");
@@ -203,22 +200,23 @@
   level.addEventListener("change", updateCourse);
 
   function updateCourse() {
-    const key = `${dept.value}-${level.value}`;
-    const value = courseMap.get(key);
+  const key = `${dept.value}-${level.value}`;
+  const value = courseMap.get(key);
 
-    course.innerHTML = `<option disabled selected>Select Course</option>`;
+  course.innerHTML = `<option disabled selected>Select Course</option>`;
 
-    if (value) {
-      course.disabled = false;
-      const opt = document.createElement("option");
-      opt.value = value;
-      opt.textContent = value;
-      course.appendChild(opt);
-      course.value = value;
-    } else {
-      course.disabled = true;
-    }
+  if (value) {
+    course.disabled = false;
+    const opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = value;
+    course.appendChild(opt);
+    course.value = value;
+    updateSemester(); // 
+  } else {
+    course.disabled = true;
   }
+}
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -244,20 +242,6 @@
               body: formData
             });
 
-<<<<<<< HEAD
-        const fd = new FormData(this);
-        const params = new URLSearchParams(window.location.search);
-        const vacId = params.get('vacId') || "";
-        if (vacId) fd.set('vacId', vacId);
-
-        const certInput = this.querySelector('input[name="certificateUpload"]');
-        if (certInput && certInput.files && certInput.files[0]) {
-          fd.set('certificateFilename', certInput.files[0].name);
-        }
-
-        const payload = Object.fromEntries(fd.entries());
-        delete payload.certificateUpload;
-=======
       if (!res.ok) throw new Error();
             openPopup();
             form.reset();
@@ -269,7 +253,6 @@
             alert("Submission failed or Server is down");
           }
         });
->>>>>>> ad771697c6324feac906f78e67776abf85bd7b39
 
       
       function openPopup() {
@@ -278,6 +261,27 @@
       function closePopup() {
         popup.classList.remove("open");
       }
+      const semesterSelect = document.getElementById("semester");
+
+course.addEventListener("change", updateSemester);
+
+function updateSemester() {
+  const selectedCourse = course.value;
+
+  semesterSelect.innerHTML =
+    `<option value="" disabled selected>Select Semester</option>`;
+
+  const totalSem = semesterMap.get(selectedCourse);
+
+  if (totalSem) {
+    for (let i = 1; i <= totalSem; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = "Semester " + i;
+      semesterSelect.appendChild(opt);
+    }
+  }
+}
 </script>
 
 </body>

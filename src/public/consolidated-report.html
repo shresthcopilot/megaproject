@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consolidated Forms Report</title>
-    <style>
+    <link rel="stylesheet" href="css/consolidated-report.css">
+
+    <!-- <style>
         * {
             margin: 0;
             padding: 0;
@@ -386,7 +388,7 @@
                 box-shadow: none;
             }
         }
-    </style>
+    </style> -->
 </head>
 <body>
     <div class="container">
@@ -486,8 +488,9 @@
             <p>Fill out VAC, Library, E-Content, Capacity, Teaching, Experiential, Learner Support, or PC forms to see them here.</p>
         </div>
     </div>
+    <script src="js/consolidated-report.js"></script>
 
-    <script>
+    <!-- <script>
         const API_BASE = "/api";
         let allData = {};
         let filteredData = {};
@@ -975,6 +978,6 @@
             localStorage.removeItem("token");
             window.location.href = "/api/auth/login";
         }
-    </script>
+    </script> -->
 </body>
 </html>

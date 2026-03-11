@@ -1,225 +1,237 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VAC Dashboard</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f2f4f8;
+        min-height: 100vh;
+      }
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>VAC Dashboard</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f2f4f8;
-      min-height: 100vh;
-    }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: #ffffff;
-      border-radius: 10px;
-      padding: 30px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    }
+      h2 {
+        text-align: center;
+        color: #fff;
+        margin-bottom: 30px;
+        padding: 15px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+      }
 
-    h2 {
-      text-align: center;
-      color: #fff;
-      margin-bottom: 30px;
-      padding: 15px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background: #fff;
-    }
-
-    th,
-    td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #e1e5e9;
-    }
-
-    th {
-      background: #f8f9fa;
-      color: #333;
-      font-weight: 600;
-    }
-
-    tr:hover {
-      background: #f2f4f8;
-    }
-
-    .btn {
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: #fff;
-      padding: 10px 22px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 15px;
-      margin: 20px 10px;
-    }
-
-    .btn:hover {
-      opacity: 0.9;
-    }
-
-    .no-data {
-      text-align: center;
-      color: #666;
-      padding: 40px;
-      font-size: 18px;
-    }
-
-    @media (max-width: 768px) {
       table {
-        font-size: 14px;
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: #fff;
       }
 
       th,
       td {
-        padding: 8px;
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e1e5e9;
       }
-    }
-  </style>
 
-</head>
+      th {
+        background: #f8f9fa;
+        color: #333;
+        font-weight: 600;
+      }
 
-<body>
-  <div class="container">
-    <h2>📋 Student Submissions</h2>
+      tr:hover {
+        background: #f2f4f8;
+      }
 
-    <div style="text-align: center; margin-bottom: 20px;">
-      <button class="btn" onclick="downloadCSV()">📥 Download CSV</button>
-      <button class="btn" onclick="clearDashboard()">🗑️ Clear Dashboard</button>
-      <!-- <button class="btn" onclick="restoreDashboard()" style="background: #6c757d;">🔄 Restore</button>
+      .btn {
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        color: #fff;
+        padding: 10px 22px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 15px;
+        margin: 20px 10px;
+      }
+
+      .btn:hover {
+        opacity: 0.9;
+      }
+
+      .no-data {
+        text-align: center;
+        color: #666;
+        padding: 40px;
+        font-size: 18px;
+      }
+
+      @media (max-width: 768px) {
+        table {
+          font-size: 14px;
+        }
+
+        th,
+        td {
+          padding: 8px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>📋 Student Submissions</h2>
+
+      <div style="text-align: center; margin-bottom: 20px">
+        <button class="btn" onclick="downloadPDF()">📥 Download PDF</button>
+        <button class="btn" onclick="clearDashboard()">
+          🗑️ Clear Dashboard
+        </button>
+        <!-- <button class="btn" onclick="restoreDashboard()" style="background: #6c757d;">🔄 Restore</button>
       <button class="btn" onclick="loadData()">🔁 Refresh</button> -->
+      </div>
+
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Enrollment No.</th>
+            <th>Phone</th>
+            <th>Course Completed</th>
+            <th>Department</th>
+            <th>Level</th>
+            <th>Semester</th>
+            <th>Course</th>
+            <th>Certificate</th>
+            <th>Submitted At</th>
+          </tr>
+        </thead>
+
+        <tbody id="tableBody"></tbody>
+      </table>
     </div>
 
-    <table id="dataTable">
+    <script>
+      let lastLoadedData = null;
 
-      <thead>
-
-        <tr>
-
-          <th>Student Name</th>
-          <th>Enrollment No.</th>
-          <th>Phone</th>
-          <th>Course Completed</th>
-          <th>Department</th>
-          <th>Level</th>
-          <th>Semester</th>
-          <th>Course</th>
-          <th>Certificate</th>
-          <th>Submitted At</th>
-
-        </tr>
-
-      </thead>
-
-      <tbody id="tableBody"></tbody>
-
-    </table>
-
-  </div>
-
-  <script>
-
-    let lastLoadedData = null;
-
-    function renderData(submissions) {
-      const tbody = document.getElementById('tableBody');
-      if (!submissions || submissions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" class="no-data">📭 No submissions yet. Fill the form first!</td></tr>';
-        return;
-      }
-      tbody.innerHTML = '';
-      submissions.forEach((data) => {
-        const row = tbody.insertRow();
-        row.innerHTML = `
-          <td>${data.studentName || 'N/A'}</td>
-          <td>${data.enrollmentNumber || 'N/A'}</td>
-          <td>${data.phoneNumber || 'N/A'}</td>
-          <td>${data.courseCompleted || 'N/A'}</td>
-          <td>${data.department || data.sectionSelect || 'N/A'}</td>
-          <td>${data.level || 'N/A'}</td>
-          <td>${data.semester || 'N/A'}</td>
-          <td>${data.course || data.courseSelect || 'N/A'}</td>
-          <td>${data.certificateFilename || 'N/A'}</td>
-          <td>${data.timestamp || data.createdAt || 'N/A'}</td>
-        `;
-      });
-    }
-
-    async function loadData() {
-      try {
-        const headers = {};
-        const token = localStorage.getItem('token');
-        if (token) headers['Authorization'] = 'Bearer ' + token;
-        const res = await fetch('/api/vac/submissions', { headers });
-        if (res.status === 401) {
-          throw new Error('Unauthorized');
+      function renderData(submissions) {
+        const tbody = document.getElementById("tableBody");
+        if (!submissions || submissions.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="10" class="no-data">📭 No submissions yet. Fill the form first!</td></tr>';
+          return;
         }
-        if (!res.ok) throw new Error('Failed to fetch');
-        const submissions = await res.json();
-        lastLoadedData = submissions;
-        renderData(submissions);
-      } catch (err) {
-        console.error('Failed to load submissions', err);
-        const tbody = document.getElementById('tableBody');
-        const msg = err.message === 'Unauthorized'
-          ? '🔐 Please login first, then open dashboard.'
-          : '⚠️ Failed to load submissions — try refreshing the page.';
-        tbody.innerHTML = `<tr><td colspan="10" class="no-data">${msg}</td></tr>`;
+        tbody.innerHTML = "";
+        submissions.forEach((data) => {
+          const row = tbody.insertRow();
+          row.innerHTML = `
+          <td>${data.studentName || "N/A"}</td>
+          <td>${data.enrollmentNumber || "N/A"}</td>
+          <td>${data.phoneNumber || "N/A"}</td>
+          <td>${data.courseCompleted || "N/A"}</td>
+          <td>${data.department || data.sectionSelect || "N/A"}</td>
+          <td>${data.level || "N/A"}</td>
+          <td>${data.semester || "N/A"}</td>
+          <td>${data.course || data.courseSelect || "N/A"}</td>
+          <td>
+  ${
+    data.certificatePath
+      ? `<img src="${data.certificatePath}" 
+              width="60" 
+              style="border-radius:6px; cursor:pointer;"
+              onclick="window.open('${data.certificatePath}')">`
+      : 'N/A'
+  }
+</td>
+          <td>${data.timestamp || data.createdAt || "N/A"}</td>
+        `;
+        });
       }
-    }
 
-    async function downloadCSV() {
-      const headers = {};
-      const token = localStorage.getItem('token');
-      if (token) headers['Authorization'] = 'Bearer ' + token;
-      try {
-        const r = await fetch('/api/vac/download',
-          { headers });
-        if (!r.ok) throw new Error('Download failed');
-        const blob = await r.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `vac_submissions_${new Date().toISOString().split('T')[0]}.csv`;
-        a.click(); URL.revokeObjectURL(url);
-      } catch (e) {
-        console.error('downloadCSV failed', e);
-        alert('Failed to download CSV');
+      async function loadData() {
+        try {
+          const headers = {};
+          const token = localStorage.getItem("token");
+          if (token) headers["Authorization"] = "Bearer " + token;
+          const res = await fetch("/api/vac/submissions", { headers });
+          if (res.status === 401) {
+            throw new Error("Unauthorized");
+          }
+          if (!res.ok) throw new Error("Failed to fetch");
+          const submissions = await res.json();
+          lastLoadedData = submissions;
+          renderData(submissions);
+        } catch (err) {
+          console.error("Failed to load submissions", err);
+          const tbody = document.getElementById("tableBody");
+          const msg =
+            err.message === "Unauthorized"
+              ? "🔐 Please login first, then open dashboard."
+              : "⚠️ Failed to load submissions — try refreshing the page.";
+          tbody.innerHTML = `<tr><td colspan="10" class="no-data">${msg}</td></tr>`;
+        }
       }
-    }
 
+      async function downloadPDF() {
+  const headers = {};
+  const token = localStorage.getItem("token");
+  if (token) headers["Authorization"] = "Bearer " + token;
 
-    function clearDashboard() {
-      if (!confirm('Clear Data !')) return;
-      const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = '<tr><td colspan="10" class="no-data">🧹 Dashboard cleared locally. Click "Restore" to bring the last loaded data back </td></tr>';
-      window.dashboardCleared = true;
-    }
+  try {
+    const r = await fetch("/api/vac/download", { headers });
 
-    function restoreDashboard() {
-      if (lastLoadedData && lastLoadedData.length) {
-        renderData(lastLoadedData);
-        window.dashboardCleared = false;
-      } else {
-        loadData();
+    if (!r.ok) throw new Error("Download failed");
+
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `vac_submissions_${new Date()
+      .toISOString()
+      .split("T")[0]}.pdf`;   // ✅ FIXED EXTENSION
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+
+  } catch (e) {
+    console.error("downloadPDF failed", e);
+    alert("Failed to download PDF");
+  }
+}
+
+      function clearDashboard() {
+        if (!confirm("Clear Data !")) return;
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML =
+          '<tr><td colspan="10" class="no-data">🧹 Dashboard cleared locally. Click "Restore" to bring the last loaded data back </td></tr>';
+        window.dashboardCleared = true;
       }
-    }
 
+      function restoreDashboard() {
+        if (lastLoadedData && lastLoadedData.length) {
+          renderData(lastLoadedData);
+          window.dashboardCleared = false;
+        } else {
+          loadData();
+        }
+      }
 
-    window.onload = loadData;
-  </script>
-</body>
-
+      window.onload = loadData;
+    </script>
+  </body>
 </html>

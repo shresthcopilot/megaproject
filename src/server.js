@@ -40,7 +40,7 @@ const __dirname = path.dirname(__filename);
 // static files
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/images", express.static(path.join(__dirname, "images")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // routes
 app.get("/", (req, res) => {
@@ -55,19 +55,20 @@ app.get("/consolidated-report", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/register", registerRoutes);
 
-import { pageAuthMiddleware} from "./middleware/pageAuthMiddleware.js";
+// import { pageAuthMiddleware} from "./middleware/pageAuthMiddleware.js";
 
 
-app.use("/api/vac", pageAuthMiddleware, vacRoutes);
-app.use("/api/pc", pageAuthMiddleware, pcRoutes);
-app.use("/api/econtent", pageAuthMiddleware, econtentRoutes);
-app.use("/api/capacity", pageAuthMiddleware, capacityRoutes);
-app.use("/api/teaching", pageAuthMiddleware, teachingRoutes);
-app.use("/api/experiential", pageAuthMiddleware, experientialRoutes);
-app.use("/api/library", pageAuthMiddleware, libraryRoutes);
-app.use("/api/learner-support", pageAuthMiddleware, learnerRoutes);
+app.use("/api/vac",  vacRoutes);
+app.use("/api/pc",  pcRoutes);
+app.use("/api/econtent",  econtentRoutes);
+app.use("/api/capacity",  capacityRoutes);
+app.use("/api/teaching",  teachingRoutes);
+app.use("/api/experiential",  experientialRoutes);
+app.use("/api/library",  libraryRoutes);
+app.use("/api/learner-support",  learnerRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/consolidated-report", consolidatedReportRoutes);
+
 
 
 // DB status endpoint
