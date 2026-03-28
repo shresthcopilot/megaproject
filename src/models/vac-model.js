@@ -68,6 +68,10 @@ const vacEntrySchema = new mongoose.Schema({
         type: String,
         default: null,
     },
+    uploadedFilepath: {
+        type: String,
+        default: null,
+    },
     sentToCoordinator: {
         type: Boolean,
         default: false

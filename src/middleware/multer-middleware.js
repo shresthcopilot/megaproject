@@ -2,37 +2,72 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-// Create certificates folder inside uploads
-const uploadDir = path.join(process.cwd(), "uploads", "certificates");
+/* ==============================
+   STUDENT CERTIFICATE UPLOAD
+============================== */
 
-// Ensure upload folder exists
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+const certificateDir = path.join(process.cwd(), "uploads", "certificates");
+
+if (!fs.existsSync(certificateDir)) {
+  fs.mkdirSync(certificateDir, { recursive: true });
 }
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const timestamp = Date.now();
-        const ext = path.extname(file.originalname);
-        const name = path
-            .basename(file.originalname, ext)
-            .replace(/\s+/g, "_");
+const certificateStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, certificateDir);
+  },
+  filename: (req, file, cb) => {
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    const name = path.basename(file.originalname, ext).replace(/\s+/g, "_");
 
-        cb(null, `${name}-${timestamp}${ext}`);
-    },
+    cb(null, `${name}-${timestamp}${ext}`);
+  },
 });
 
-export const upload = multer({
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-    fileFilter: (req, file, cb) => {
-        const allowed = /pdf|docx|doc|jpeg|jpg|png/;
-        const ext = path.extname(file.originalname).toLowerCase();
-
-        if (allowed.test(ext)) cb(null, true);
-        else cb(new Error("File type not allowed"));
-    },
+export const certificateUpload = multer({
+  storage: certificateStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: fileFilter,
 });
+
+/* ==============================
+   VAC BROUCHER UPLOAD
+============================== */
+
+const brochureDir = path.join(process.cwd(), "uploads", "vac-broucher");
+
+if (!fs.existsSync(brochureDir)) {
+  fs.mkdirSync(brochureDir, { recursive: true });
+}
+
+const brochureStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, brochureDir);
+  },
+  filename: (req, file, cb) => {
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    const name = path.basename(file.originalname, ext).replace(/\s+/g, "_");
+
+    cb(null, `${name}-${timestamp}${ext}`);
+  },
+});
+
+export const brochureUpload = multer({
+  storage: brochureStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: fileFilter,
+});
+
+/* ==============================
+   FILE VALIDATION
+============================== */
+
+function fileFilter(req, file, cb) {
+  const allowed = /pdf|docx|doc|jpeg|jpg|png/;
+  const ext = path.extname(file.originalname).toLowerCase();
+
+  if (allowed.test(ext)) cb(null, true);
+  else cb(new Error("File type not allowed"));
+}

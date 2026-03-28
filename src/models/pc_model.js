@@ -17,11 +17,12 @@ const programmeCoordinatorSchema = new mongoose.Schema(
             default: "",
             trim: true,
         },
-        semester: {
-            type: String,
-            required: true,
-            trim: true,
-        },
+         semester: {
+            type: Number,
+           required: true,
+           min: 1,
+           max: 10,
+     },
         yearOfIntroduction: {
             type: String,
             required: true,
@@ -37,11 +38,11 @@ const programmeCoordinatorSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
-        departmentName: {
-            type: String,
-            required: true,
-            trim: true,
-        },
+       department: {
+    type: String,
+    required: true,
+    enum: ["IT", "Management", "Commerce", "Law"],
+  },
         coordinatorEmail: {
             type: String,
             required: true,

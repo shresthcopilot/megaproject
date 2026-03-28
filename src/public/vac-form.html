@@ -247,6 +247,10 @@
               <label for="programId1">Program ID (optional)</label>
               <input type="text" id="programId1" placeholder="Program ID or UUID" />
             </div>
+            <div class="form-group">
+              <label for="programmecode">Program Code (optional)</label>
+              <input type="text" id="programmecode" placeholder="Program Code " />
+            </div>
 
             <div class="form-group">
               <label for="duration1">Duration (Hours) *</label>
@@ -317,112 +321,82 @@
         (function () {
           const submitBtn = document.getElementById("submitVacBtn");
 
-          async function submitVac() {
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Sending...";
+         async function submitVac() {
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Sending...";
 
-            const courseName = document.getElementById("courseName1").value.trim();
-            const courseCode = document.getElementById("courseCode1").value.trim();
-            const duration = document.getElementById("duration1").value;
-            const timesOffered = document.getElementById("timesOffered1").value;
-            const studentsEnrolled = document.getElementById("studentsEnrolled1").value.trim();
-            const studentsCompleted = document.getElementById("studentsCompleted1").value.trim();
-            const brochureInput = document.getElementById("certificateUpload");
-            const coordinator = document.getElementById("coordinator1").value.trim();
+  const courseName = document.getElementById("courseName1").value.trim();
+  const courseCode = document.getElementById("courseCode1").value.trim();
+  const duration = document.getElementById("duration1").value;
+  const timesOffered = document.getElementById("timesOffered1").value;
+  const studentsEnrolled = document.getElementById("studentsEnrolled1").value.trim();
+  const studentsCompleted = document.getElementById("studentsCompleted1").value.trim();
+  const coordinator = document.getElementById("coordinator1").value.trim();
+  const programId = document.getElementById("programId1").value.trim();
+  const certificateInput = document.getElementById("certificateUpload");
 
-            if (!courseName || !courseCode || !duration || !timesOffered || !coordinator) {
-              alert("Please fill required fields: Course Name, Course Code, Duration, Times Offered, Coordinator");
-              submitBtn.disabled = false;
-              submitBtn.textContent = "Send Data";
-              return;
-            }
+  if (!courseName || !courseCode || !duration || !timesOffered || !coordinator) {
+    alert("Please fill all required fields");
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Send Data";
+    return;
+  }
 
-            let brochureLink = "";
-            if (brochureInput && brochureInput.files && brochureInput.files.length) {
-              const f = brochureInput.files[0];
-              const name = f.name || '';
-              const ext = name.split('.').pop().toLowerCase();
-              const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'csv'];
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Please login first");
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Send Data";
+    return;
+  }
+ const formData = new FormData();
+  formData.append("programId", programId);
+ const course = {
+  courseName,
+  courseCode,
+  duration,
+  timesOffered,
+  studentsEnrolled,
+  studentsCompleted,
+  coordinator,
+  brochureLink: document.getElementById("brochureLink1").value.trim()
+};
+  formData.append("courses", JSON.stringify([course]));
+  formData.append("program_Id", programId);
+  formData.append("programmeCode", document.getElementById("programmecode").value.trim());
+  // formData.append("department", department); -->
 
-              if (!allowedExtensions.includes(ext)) {
-                alert('Only PDF, JPG, PNG and CSV files are allowed.');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Send Data';
-                return;
-              }
+  if (certificateInput.files.length > 0) {
+    const file = certificateInput.files[0];
+    formData.append("certificateUpload", file);
+  }
 
-              // if (ext === 'csv') {
-              //   alert('CSV files are not accepted. Please upload PDF, JPG or PNG files only.');
-              //   submitBtn.disabled = false;
-              //   submitBtn.textContent = '📩 Send To Program-Coordinator ';
-              //   return;
-              // }
-              brochureLink = name;
-            }
+  try {
 
-            const payload = {
-              program_Id: (document.getElementById('programId1') && document.getElementById('programId1').value) ? document.getElementById('programId1').value.trim() : "",
-              courses: [
-                {
-                  courseName,
-                  courseCode,
-                  duration: Number(duration) || 0,
-                  timesOffered: Number(timesOffered) || 0,
-                  studentsEnrolled,
-                  studentsCompleted,
-                  brochureLink,
-                  coordinator,
-                },
-              ],
-            };
+    const response = await fetch("/api/vac/entries", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token
+      },
+      body: formData
+    });
 
-            const token = (() => {
-              try {
-                return localStorage.getItem("token");
-              } catch (e) {
-                return null;
-              }
-            })();
+    const result = await response.json();
 
-            if (!token) {
-              alert("You must be logged in to submit a VAC entry. Please login first.");
-              submitBtn.disabled = false;
-              submitBtn.textContent = "Send Data";
-              return;
-            }
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to submit VAC entry");
+    }
 
-            try {
-              // Send JSON payload to VAC entries endpoint (saves to DB)
-              const response = await fetch('/api/vac/entries', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify(payload)
-              });
+    openPopup();
 
-              const result = await response.json();
-              if (!response.ok) {
-                const msg = result && result.error ? result.error : 'Failed to submit VAC entry';
-                throw new Error(msg);
-              }
+  } catch (err) {
+    console.error(err);
+    alert("Submission failed: " + err.message);
+  }
 
-              openPopup();
-              // Optionally redirect after short delay
-              setTimeout(() => {
-                // refresh or go to dashboard
-                // window.location.href = '/pcdashboard.html';
-              }, 1200);
-            } catch (err) {
-              console.error('Submit error', err);
-              alert('Error submitting VAC entry: ' + (err.message || err));
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'Send Data';
-            }
-          }
-
-          submitBtn.addEventListener("click", submitVac);
+  submitBtn.disabled = false;
+  submitBtn.textContent = "Send Data";
+}          submitBtn.addEventListener("click", submitVac);
         })();
       </script>
 </body>

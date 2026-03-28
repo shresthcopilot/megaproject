@@ -1,8 +1,9 @@
 import express from "express";
 import { 
   getConsolidatedData, 
-  downloadConsolidatedCSV, 
-  getSummary 
+  // downloadConsolidatedCSV, 
+  getSummary,
+  downloadPDF
 } from "../controllers/consolidatedReportController.js";
 import { authMiddleware } from "../middleware/auth-middleware.js";
 
@@ -14,7 +15,7 @@ router.get("/all", authMiddleware, getConsolidatedData);
 // Get summary of all forms
 router.get("/summary", authMiddleware, getSummary);
 
-// Download consolidated CSV
-router.get("/download-csv", authMiddleware, downloadConsolidatedCSV);
+// Download consolidated PDF report
+router.post("/download-pdf", authMiddleware, downloadPDF);
 
 export default router;

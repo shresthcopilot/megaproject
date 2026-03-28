@@ -23,7 +23,7 @@ router.post("/submit", authMiddleware, async (req, res) => {
       "yearOfIntroduction",
       "schoolName",
       "coordinatorName",
-      "departmentName",
+      "department",
       "coordinatorEmail",
       "programmeName",
       "coordinatorContact",
@@ -77,11 +77,11 @@ router.post("/submit", authMiddleware, async (req, res) => {
       academicYear: formData.academicYear.trim(),
       programmeCode: formData.programmeCode.trim().toUpperCase(),
       program_Id: (formData.program_Id || formData.programId || "").toString(),
-      semester: formData.semester.trim(),
+      // semester: formData.semester.trim(),
       yearOfIntroduction: formData.yearOfIntroduction.trim(),
       schoolName: formData.schoolName.trim(),
       coordinatorName: formData.coordinatorName.trim(),
-      departmentName: formData.departmentName.trim(),
+      // departmentName: formData.departmentName.trim(),
       coordinatorEmail: formData.coordinatorEmail.trim().toLowerCase(),
       programmeName: formData.programmeName.trim(),
       coordinatorContact: formData.coordinatorContact.trim(),
@@ -112,7 +112,7 @@ router.post("/submit", authMiddleware, async (req, res) => {
 router.get("/entries", authMiddleware, async (req, res) => {
   try {
     // Allow optional filtering by programId (program_Id field)
-    const match = { createdBy: (req.user.id) };
+   const match = { createdBy: new mongoose.Types.ObjectId(req.user.id) };
     if (req.query.programId) match.program_Id = req.query.programId;
 
     // Lookup VacEntry documents created by this user with same programmeCode

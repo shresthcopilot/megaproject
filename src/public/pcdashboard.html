@@ -613,7 +613,7 @@
     renderDashboard();
 
     // VAC modal implementation
-    async function showVacModal() {
+   async function showVacModal() { 
       const token = (() => {
         try {
           return localStorage.getItem("token");
@@ -689,7 +689,7 @@
           viewBtn.style.borderRadius = "6px";
           viewBtn.style.cursor = "pointer";
           viewBtn.addEventListener("click", () =>
-            openEntryDetails(e.id, modal)
+            openEntryDetails(e.id || e._id, modal)
           );
 
           const downloadBtn = document.createElement("button");
@@ -711,14 +711,14 @@
                 rows.push('section,entryId,createdAt,note');
                 rows.push(['VAC', e.id || '', e.createdAt || '', 'no courses'].map(v => typeof v === 'object' ? JSON.stringify(v) : String(v)).map(v => v.includes(',') || v.includes('\n') || v.includes('"') ? '"' + v.replace(/"/g, '""') + '"' : v).join(','));
               }
-              const csv = rows.join('\n');
-              const blob = new Blob([csv], { type: 'text/csv' });
-              const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `vac_entry_${e.id || 'local'}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+              const pdf = rows.join('\n');
+              const blob = new Blob([pdf], { type: 'application/pdf' });
+              const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `vac_entry_${e.id || 'local'}.pdf`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
             });
           } else {
             downloadBtn.addEventListener("click", () =>
-              downloadEntryCSV(e.id, token)
-            );
+  downloadEntryPDF(e._id || e.id, token)
+);
           }
 
           right.appendChild(viewBtn);
@@ -733,7 +733,7 @@
             downloadFileBtn.style.cursor = "pointer";
             downloadFileBtn.style.marginLeft = "8px";
             downloadFileBtn.addEventListener("click", () => {
-              const fileUrl = `/uploads/${e.uploadedFile}`;
+              const fileUrl = `/uploads/vac-broucher/${e.uploadedFile}`;
               const a = document.createElement("a");
               a.href = fileUrl;
               a.download = e.uploadedFile;
@@ -773,13 +773,15 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = "vac_entries_all.csv";
+                a.download = "vac_entries_all.pdf";
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
                 URL.revokeObjectURL(url);
                 return;
               };
+              console.log("AUTH HEADER:", req.headers.authorization);
+console.log("USER:", req.user);
 
               // combine local + server entries (entries variable is in scope)
               const combined = [...local, ...(entries || [])];
@@ -802,7 +804,7 @@
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = 'vac_entries_combined.csv';
+              a.download = 'vac_entries_combined.pdf';
               document.body.appendChild(a); a.click();
               a.remove(); URL.revokeObjectURL(url);
             }
@@ -871,8 +873,13 @@
       })();
       if (!token) return alert("Not authenticated");
       try {
-        const res = await fetch("/api/vac/entries/" + id, {
-          headers: { Authorization: "Bearer " + token },
+       const res = await fetch("/api/vac/entries/" + id, {
+  method: "GET", // ✅ MUST include
+  headers: {
+    "Authorization": `Bearer ${token}`,
+    "Content-Type": "application/json" // ✅ helps middleware
+  }
+
         });
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
@@ -926,7 +933,7 @@
       }
     }
 
-    async function downloadEntryCSV(id, token) {
+    async function downloadEntryPDF(id, token) {
       try {
         const res = await fetch("/api/vac/entries/" + id + "/download", {
           headers: { Authorization: "Bearer " + token },
@@ -940,14 +947,14 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `vac_entry_${id}.csv`;
+        a.download = `vac_entry_${id}.pdf`;
         document.body.appendChild(a);
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
       } catch (err) {
         console.error(err);
-        alert("Failed to download CSV");
+        alert("Failed to download pdf");
       }
     }
 

@@ -1,9 +1,10 @@
 import express from "express";
+import PcDetailsModel from "../models/pc_model.js";
 import mongoose from "mongoose";
 import Student from "../models/vac-form-model.js";
 import VacEntry from "../models/vac-model.js";
 import { authMiddleware } from "../middleware/auth-middleware.js";
-import { upload } from "../middleware/multer-middleware.js";
+import { certificateUpload, brochureUpload} from "../middleware/multer-middleware.js";
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
@@ -60,9 +61,7 @@ async function readEntryById(id) {
   };
 }
 
-router.post(
-  "/submissions",
-  upload.single("certificateUpload"),
+router.post("/submissions",authMiddleware,certificateUpload.single("certificateUpload"),
   async (req, res) => {
     try {
       const payload = req.body || {};
@@ -122,7 +121,7 @@ router.post(
   },
 );
 
-router.get("/submissions", authMiddleware, async (req, res) => {
+router.get("/submissions", authMiddleware,certificateUpload.single("certificateUpload"), async (req, res) => {
   try {
     if (req.user && req.user.role === "admin") {
       const submissions = await readSubmissions();
@@ -153,33 +152,6 @@ router.get("/submissions", authMiddleware, async (req, res) => {
     res.status(500).json({ error: "Failed to read submissions" });
   }
 });
-
-// function toCSV(rows) {
-//   if (!Array.isArray(rows) || rows.length === 0) return "";
-//   const keys = Array.from(
-//     rows.reduce((acc, r) => {
-//       Object.keys(r).forEach((k) => acc.add(k));
-//       return acc;
-//     }, new Set()),
-//   );
-
-//   const escape = escapeCsvValue;
-
-//   const header = keys.join(",");
-
-//   const lines = rows.map((r) => keys.map((k) => escape(r[k])).join(","));
-
-//   return [header, ...lines].join("\n");
-// }
-
-// function escapeCsvValue(v) {
-//   if (v === null || v === undefined) return "";
-//   const raw = typeof v === "object" ? JSON.stringify(v) : String(v);
-//   return raw.includes(",") || raw.includes("\n") || raw.includes('"')
-//     ? '"' + raw.replace(/"/g, '""') + '"'
-//     : raw;
-// }
-
 router.get("/download", authMiddleware, async (req, res) => {
   try {
     const submissions = await readSubmissions();
@@ -252,7 +224,7 @@ router.get("/download", authMiddleware, async (req, res) => {
       submission.certificateFilename
     );
 
-    console.log("Checking certificate:", fullPath);
+    // console.log("Checking certificate:", fullPath);
 
     if (fs.existsSync(fullPath)) {
 
@@ -306,166 +278,6 @@ router.get("/download", authMiddleware, async (req, res) => {
     res.status(500).json({ error: "Failed to generate PDF" });
   }
 });
-
-// --- entries (VAC section-6) endpoints ---
-router.post("/entries", authMiddleware, async (req, res) => {
-  try {
-    const payload = req.body; // should include courses array and metadata
-    if (!payload || Object.keys(payload).length === 0)
-      return res.status(400).json({ error: "Empty payload" });
-
-    if (
-      !mongoose ||
-      !mongoose.connection ||
-      mongoose.connection.readyState !== 1
-    )
-      return res.status(503).json({ error: "DB not connected" });
-
-    const doc = new VacEntry({
-      courses: Array.isArray(payload.courses) ? payload.courses : [],
-      createdBy: req.user?.id,
-      uploadedFile: req.file ? req.file.filename : null,
-      programmeCode: payload.programmeCode
-        ? String(payload.programmeCode).trim().toUpperCase()
-        : payload.programme_code || "",
-      program_Id: payload.program_Id || payload.programId || "",
-    });
-
-    const saved = await doc.save();
-    res.json({
-      ok: true,
-      id: saved._id.toString(),
-      uploadedFile: saved.uploadedFile,
-    });
-  } catch (err) {
-    console.error("Error saving entry", err);
-    res.status(500).json({ error: "Failed to save entry" });
-  }
-});
-
-router.get("/entries", authMiddleware, async (req, res) => {
-  try {
-    // Admins see all entries; other users only see their own created entries
-    if (req.user && req.user.role === "admin") {
-      const entries = await readEntries();
-      return res.json(entries);
-    }
-
-    // for non-admins, query DB for entries created by the user
-    const docs = await VacEntry.find({ createdBy: req.user?.id }).lean().exec();
-    const entries = docs.map((d) => ({
-      id: d._id.toString(),
-      createdAt: d.createdAt
-        ? new Date(d.createdAt).toISOString()
-        : new Date().toISOString(),
-      ...d,
-    }));
-    return res.json(entries);
-  } catch (err) {
-    console.error("Error reading entries", err);
-    res.status(500).json({ error: "Failed to read entries" });
-  }
-});
-
-router.get("/entries/:id", authMiddleware, async (req, res) => {
-  try {
-    const id = req.params.id;
-    const entry = await readEntryById(id);
-    if (!entry) return res.status(404).json({ error: "Not found" });
-
-    // enforce owner-only view for non-admins
-    if (
-      req.user &&
-      req.user.role !== "admin" &&
-      String(entry.createdBy || "") !== String(req.user.id)
-    ) {
-      return res.status(403).json({ error: "Forbidden" });
-    }
-
-    res.json(entry);
-  } catch (err) {
-    console.error("Error reading entry", err);
-    res.status(500).json({ error: "Failed to read entry" });
-  }
-});
-
-router.delete("/entries/:id", authMiddleware, async (req, res) => {
-  try {
-    const id = req.params.id;
-    if (!id) return res.status(400).json({ error: "Missing id" });
-
-    if (
-      !mongoose ||
-      !mongoose.connection ||
-      mongoose.connection.readyState !== 1
-    )
-      return res.status(503).json({ error: "DB not connected" });
-
-    // enforce owner or admin
-
-    const entryDoc = await VacEntry.findById(id).exec();
-    if (!entryDoc) return res.status(404).json({ error: "Not found" });
-
-    if (
-      req.user.role !== "admin" &&
-      String(entryDoc.createdBy || "") !== String(req.user.id)
-    )
-      return res.status(403).json({ error: "Forbidden" });
-
-    const r = await VacEntry.findByIdAndDelete(id).exec();
-
-    if (!r) return res.status(404).json({ error: "Not found" });
-
-    res.json({ ok: true });
-  } catch (err) {
-    console.error("Error deleting entry", err);
-    res.status(500).json({ error: "Failed to delete entry" });
-  }
-});
-
-// mark entry as sent to program coordinator and attach matching student submissions
-router.post("/entries/:id/send", authMiddleware, async (req, res) => {
-  try {
-    const id = req.params.id;
-    if (!id) return res.status(400).json({ error: "Missing id" });
-
-    if (
-      !mongoose ||
-      !mongoose.connection ||
-      mongoose.connection.readyState !== 1
-    )
-      return res.status(503).json({ error: "DB not connected" });
-
-    const entry = await VacEntry.findById(id).exec();
-    if (!entry) return res.status(404).json({ error: "Not found" });
-
-    // only admin or owner can send
-    if (
-      req.user.role !== "admin" &&
-      String(entry.createdBy || "") !== String(req.user.id)
-    )
-      return res.status(403).json({ error: "Forbidden" });
-
-    // get linked student submissions (submitted with vacId set)
-
-    const matchedStudents = await Student.find({ vacId: id }).lean().exec();
-
-    entry.studentCount = Array.isArray(matchedStudents)
-      ? matchedStudents.length
-      : 0;
-    entry.sentToCoordinator = true;
-    entry.sentToCoordinatorAt = new Date();
-    await entry.save();
-
-    // Do not attach full students to the entry response to protect privacy
-    res.json({ ok: true, id, studentCount: entry.studentCount });
-  } catch (err) {
-    console.error("Error sending entry", err);
-    res.status(500).json({ error: "Failed to send" });
-  }
-});
-
-// download PDF for all students (admin only)
 router.get("/entries/download", authMiddleware, async (req, res) => {
   try {
     if (!req.user || req.user.role !== "admin") {
@@ -589,67 +401,412 @@ router.get("/entries/download", authMiddleware, async (req, res) => {
     }
   }
 });
-
-// download combined CSV for a single entry (courses + students)
-
 router.get("/entries/:id/download", authMiddleware, async (req, res) => {
   try {
+
     const id = req.params.id;
 
-    const entry = await readEntryById(id);
-    if (!entry) return res.status(404).json({ error: "Not found" });
+    const entry = await VacEntry.findById(id).lean();
+   
 
-    if (
-      req.user.role !== "admin" &&
-      String(entry.createdBy || "") !== String(req.user.id)
-    ) {
-      return res.status(403).json({ error: "Forbidden" });
+    if (!entry) {
+      return res.status(404).json({ error: "Entry not found" });
     }
 
-    const students = await Student.find({ vacId: id })
-      .select("-_id -vacId -__v")
-      .lean()
-      .exec();
+    const user = req.user;
+    //   console.log("ENTRY:", entry.programmeCode);
+    // console.log("USER:", req.user);
+
+    // ---- ACCESS CONTROL ----
+
+    if (user.role !== "admin") {
+
+      if (user.role !== "pc") {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      // PC can only download their programme VAC
+      // allow PC only if they created it
+   // find PC details
+const pc = await PcDetailsModel.findOne({ createdBy: req.user.id });
+
+if (!pc) {
+  return res.status(403).json({ error: "PC not found" });
+}
+
+// match programme
+if (entry.programmeCode !== pc.programmeCode) {
+  return res.status(403).json({ error: "Not allowed for this programme" });
+}
+
+    }
+
+    // ---- PDF GENERATION ----
 
     res.setHeader("Content-Type", "application/pdf");
+
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="vac_entry_${id}.pdf"`,
+      `attachment; filename="vac_entry_${id}.pdf"`
     );
 
     const doc = new PDFDocument({ margin: 40 });
+
     doc.pipe(res);
 
     doc.fontSize(18).text("VAC Entry Report", { align: "center" });
+
     doc.moveDown();
 
-    doc.text(`Programme Code: ${entry.programmeCode || "-"}`);
+    doc.fontSize(12);
+
     doc.text(`Program ID: ${entry.program_Id || "-"}`);
-    doc.text(`Created At: ${entry.createdAt}`);
-    doc.moveDown(2);
+    doc.text(`Programme Code: ${entry.programmeCode || "-"}`);
+    doc.text(`Created At: ${new Date(entry.createdAt).toLocaleString()}`);
 
-    doc.fontSize(14).text("Students:", { underline: true });
     doc.moveDown();
 
-    if (!students.length) {
-      doc.text("No students found.");
-    } else {
-      students.forEach((s, index) => {
-        doc.text(`Student ${index + 1}`);
-        doc.text(`Name: ${s.studentName}`);
-        doc.text(`Enrollment: ${s.enrollmentNumber}`);
-        doc.text(`Course: ${s.course}`);
-        doc.text(`Semester: ${s.semester}`);
-        doc.moveDown();
+    // ---- COURSES ----
+
+    
+
+      doc.fontSize(14).text("Courses:", { underline: true });
+      if(entry.courses && entry.courses.length > 0) {
+
+      entry.courses.forEach((c, i) => {
+
+        doc.moveDown(0.5);
+
+        doc.fontSize(12).text(`${i + 1}. ${c.courseName || "-"}`);
+
+        doc.text(`Course Code: ${c.courseCode || "-"}`);
+        doc.text(`Duration: ${c.duration || "-"}`);
+        doc.text(`Students Enrolled: ${c.studentsEnrolled || "-"}`);
+        doc.text(`Students Completed: ${c.studentsCompleted || "-"}`);
+
       });
+
+    }
+
+    doc.moveDown();
+
+    // ---- BROCHURE IMAGE ----
+
+    if (entry.uploadedFile) {
+
+      const filePath = path.join(
+        process.cwd(),
+        "uploads",
+        "vac-broucher",
+        entry.uploadedFile
+      );
+
+      if (fs.existsSync(filePath)) {
+
+        doc.addPage();
+
+        doc.fontSize(14).text("Course Brochure");
+
+        const ext = path.extname(filePath).toLowerCase();
+
+        if ([".jpg", ".jpeg", ".png"].includes(ext)) {
+
+          doc.moveDown();
+
+          doc.image(filePath, {
+            fit: [400, 400],
+            align: "center",
+          });
+
+        } else {
+
+          doc.text(`Brochure File: ${entry.uploadedFile}`);
+
+        }
+
+      }
+
     }
 
     doc.end();
+    // console.log("file" ,entry.uploadedFile);
+
   } catch (err) {
-    console.error("Error generating PDF", err);
+
+    console.error("VAC PDF ERROR:", err);
+
     res.status(500).json({ error: "Failed to generate PDF" });
+
   }
 });
+// function toCSV(rows) {
+//   if (!Array.isArray(rows) || rows.length === 0) return "";
+//   const keys = Array.from(
+//     rows.reduce((acc, r) => {
+//       Object.keys(r).forEach((k) => acc.add(k));
+//       return acc;
+//     }, new Set()),
+//   );
+
+//   const escape = escapeCsvValue;
+
+//   const header = keys.join(",");
+
+//   const lines = rows.map((r) => keys.map((k) => escape(r[k])).join(","));
+
+//   return [header, ...lines].join("\n");
+// }
+
+// function escapeCsvValue(v) {
+//   if (v === null || v === undefined) return "";
+//   const raw = typeof v === "object" ? JSON.stringify(v) : String(v);
+//   return raw.includes(",") || raw.includes("\n") || raw.includes('"')
+//     ? '"' + raw.replace(/"/g, '""') + '"'
+//     : raw;
+// }
+
+
+
+// --- entries (VAC section-6) endpoints ---
+router.post("/entries", authMiddleware,brochureUpload.single("certificateUpload"), async (req, res) => {
+  try {
+    const payload = req.body; // should include courses array and metadata
+    // if (!payload || Object.keys(payload).length === 0)
+    //   return res.status(400).json({ error: "Empty payload" });
+
+    // if (
+    //   !mongoose ||
+    //   !mongoose.connection ||
+    //   mongoose.connection.readyState !== 1
+    // )
+    //   return res.status(503).json({ error: "DB not connected" });
+    //  DEBUG (keep this for now)
+    // console.log("BODY:", payload);
+
+    //  FIX: Parse courses safely
+    let courses = [];
+
+    if (payload.courses) {
+      try {
+        courses = JSON.parse(payload.courses);
+      } catch (err) {
+        console.error("Courses parse error:", err);
+      }
+    }
+    
+
+    const doc = new VacEntry({
+      // courses: Array.isArray(payload.courses) ? payload.courses : [],
+      courses,
+      createdBy: req.user?.id,
+      uploadedFile: req.file ? req.file.filename : null,
+      programmeCode: payload.programmeCode
+        ? String(payload.programmeCode).trim().toUpperCase()
+        : payload.programme_code || "",
+      program_Id: payload.program_Id || payload.programId || "",
+      // department: payload.department 
+    });
+
+    const saved = await doc.save();
+    res.json({
+      ok: true,
+      id: saved._id.toString(),
+      
+      uploadedFilePath: saved.uploadedFile
+        ? `/uploads/vac-brochures/${saved.uploadedFile}`
+        : null,
+        
+    });
+    // console.log(req.file)
+  } catch (err) {
+    console.error("Error saving entry", err);
+    res.status(500).json({ error: "Failed to save entry" });
+  }
+});
+
+router.get("/entries", authMiddleware, async (req, res) => {
+  try {
+
+    // 1️⃣ ADMIN → see all entries
+    if (req.user?.role === "admin") {
+      const docs = await VacEntry.find().lean();
+
+      const entries = docs.map((d) => ({
+        id: d._id.toString(),
+        createdAt: d.createdAt
+          ? new Date(d.createdAt).toISOString()
+          : new Date().toISOString(),
+        ...d,
+      }));
+
+      return res.json(entries);
+    }
+
+
+    // 2️⃣ VAC → see only their own entries
+    // if (req.user?.role === "vac") {
+    //   const docs = await VacEntry.find({
+    //     createdBy: req.user.id,
+    //   }).lean();
+
+    //   const entries = docs.map((d) => ({
+    //     id: d._id.toString(),
+    //     createdAt: d.createdAt
+    //       ? new Date(d.createdAt).toISOString()
+    //       : new Date().toISOString(),
+    //     ...d,
+    //   }));
+
+    //   return res.json(entries);
+    // }
+
+
+    // 3 PC → see VAC entries based on programmeCode + department
+    if (req.user?.role === "pc") {
+      // console.log("REQ.USER:", req.user);
+
+
+
+     const pc = await PcDetailsModel.findOne({
+        createdBy: req.user.id
+     }).lean();
+    //  console.log("PC DETAILS:", pc);
+
+      if (!pc) {
+        return res.json([]);
+      }
+
+      const docs = await VacEntry.find({
+        programmeCode: pc.programmeCode.trim().toUpperCase(),
+        // department: pc.department,
+      }).lean();
+      // console.log("PC programmeCode:", pc?.programmeCode);
+
+      const entries = docs.map((d) => ({
+        id: d._id.toString(),
+        createdAt: d.createdAt
+          ? new Date(d.createdAt).toISOString()
+          : new Date().toISOString(),
+        ...d,
+      }));
+      //  console.log("ENTRIES:", docs.length);
+
+      return res.json(entries);
+    }
+
+    // // 4️⃣ If role not allowed
+    // return res.status(403).json({ error: "Access denied" });
+
+  } catch (err) {
+    console.error("Error reading entries", err);
+    res.status(500).json({ error: "Failed to read entries" });
+  }
+});
+
+router.get("/entries/:id", authMiddleware, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const entry = await readEntryById(id);
+    if (!entry) return res.status(404).json({ error: "Not found" });
+
+    // enforce owner-only view for non-admins
+    // if (
+    //   req.user &&
+    //   req.user.role !== "admin" &&
+    //   String(entry.createdBy || "") !== String(req.user.id)
+    // ) {
+    //   return res.status(403).json({ error: "Forbidden" });
+    // }
+
+    res.json(entry);
+  } catch (err) {
+    console.error("Error reading entry", err);
+    res.status(500).json({ error: "Failed to read entry" });
+  }
+});
+
+router.delete("/entries/:id", authMiddleware, async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) return res.status(400).json({ error: "Missing id" });
+
+    if (
+      !mongoose ||
+      !mongoose.connection ||
+      mongoose.connection.readyState !== 1
+    )
+      return res.status(503).json({ error: "DB not connected" });
+
+    // enforce owner or admin
+
+    const entryDoc = await VacEntry.findById(id).exec();
+    if (!entryDoc) return res.status(404).json({ error: "Not found" });
+
+    if (
+      req.user.role !== "admin" &&
+      String(entryDoc.createdBy || "") !== String(req.user.id)
+    )
+      return res.status(403).json({ error: "Forbidden" });
+
+    const r = await VacEntry.findByIdAndDelete(id).exec();
+
+    if (!r) return res.status(404).json({ error: "Not found" });
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Error deleting entry", err);
+    res.status(500).json({ error: "Failed to delete entry" });
+  }
+});
+
+// mark entry as sent to program coordinator and attach matching student submissions
+router.post("/entries/:id/send", authMiddleware, async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) return res.status(400).json({ error: "Missing id" });
+
+    if (
+      !mongoose ||
+      !mongoose.connection ||
+      mongoose.connection.readyState !== 1
+    )
+      return res.status(503).json({ error: "DB not connected" });
+
+    const entry = await VacEntry.findById(id).exec();
+    if (!entry) return res.status(404).json({ error: "Not found" });
+
+    // only admin or owner can send
+    if (
+      req.user.role !== "admin" &&
+      String(entry.createdBy || "") !== String(req.user.id)
+    )
+      return res.status(403).json({ error: "Forbidden" });
+
+    // get linked student submissions (submitted with vacId set)
+
+    const matchedStudents = await Student.find({ vacId: id }).lean().exec();
+
+    entry.studentCount = Array.isArray(matchedStudents)
+      ? matchedStudents.length
+      : 0;
+    entry.sentToCoordinator = true;
+    entry.sentToCoordinatorAt = new Date();
+    await entry.save();
+
+    // Do not attach full students to the entry response to protect privacy
+    res.json({ ok: true, id, studentCount: entry.studentCount });
+  } catch (err) {
+    console.error("Error sending entry", err);
+    res.status(500).json({ error: "Failed to send" });
+  }
+});
+
+// download PDF for all students (admin only)
+
+
+// download combined CSV for a single entry (courses + students)
+
+
 
 router.delete("/submissions/:id", authMiddleware, async (req, res) => {
   try {
