@@ -396,10 +396,10 @@
             <h1>� Consolidated Forms Report</h1>
             <p>All submitted forms in a single unified view</p>
             <div class="action-buttons">
-                <button class="btn btn-refresh" onclick="loadData()">🔄 Refresh</button>
-                <button class="btn btn-download" onclick="downloadPDF()">📥 Download PDF</button>
-                <button class="btn btn-download" onclick="downloadCSV()" style="background: #27ae60;">📊 Download CSV</button>
-                <button class="btn btn-logout" onclick="logout()">🚪 Logout</button>
+                <button type="button" class="btn btn-refresh" onclick="loadData()">🔄 Refresh</button>
+                <button type="button" class="btn btn-download" onclick="downloadPDF()">📥 Download PDF</button>
+                <button type="button" class="btn btn-download" onclick="downloadExcel()" style="background: #27ae60;">📊 Download Excel</button>
+                <button type="button" class="btn btn-logout" onclick="logout()">🚪 Logout</button>
             </div>
         </div>
 
@@ -488,7 +488,8 @@
             <p>Fill out VAC, Library, E-Content, Capacity, Teaching, Experiential, Learner Support, or PC forms to see them here.</p>
         </div>
     </div>
-    <script src="js/consolidated-report.js"></script>
+    <script src="js/global-fetch.js?v=20260405"></script>
+    <script src="js/consolidated-report.js?v=20260405"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 

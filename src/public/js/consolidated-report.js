@@ -32,6 +32,15 @@ document.addEventListener("DOMContentLoaded", () => {
     loadData();
 });
 
+function getCurrentFilters() {
+    return {
+        formType: document.getElementById("filterFormType")?.value || "",
+        semester: document.getElementById("filterSemester")?.value || "",
+        department: document.getElementById("filterDepartment")?.value || "",
+        programId: (document.getElementById("filterProgramId")?.value || "").trim()
+    };
+}
+
 /* ================= AUTH ================= */
 
 function checkAuth() {
@@ -74,91 +83,172 @@ async function loadData() {
         DOM.loading().style.display = "none";
     }
 }
-// function to handle pdf download - can be extended to handle csv download as well
-// async function downloadPDF() {
-//   try {
-//       // Use already applied filters
-//     const params = new URLSearchParams();
-
-//     if (activeFilters.formType) params.append("formType", activeFilters.formType);
-//     if (activeFilters.semester) params.append("semester", activeFilters.semester);
-//     if (activeFilters.department) params.append("department", activeFilters.department);
-//     if (activeFilters.programId) params.append("programId", activeFilters.programId);
-
-//     const response = await fetch("/api/consolidated-report/download-pdf", {
-//       headers: {
-//         "Authorization": `Bearer ${localStorage.getItem("token")}`
-//       }
-//     });
-
-//     const blob = await response.blob();
-//     const url = window.URL.createObjectURL(blob);
-
-//     const a = document.createElement("a");
-//     a.href = url;
-//     a.download = "consolidated-report.pdf";
-//     a.click();
-
-//     window.URL.revokeObjectURL(url);
-
-//   } catch (err) {
-//     alert("PDF download failed");
-//   }
-// }
-// for testing purposes - can be removed later
+// - can be extended to handle csv download as well for testing purposes - can be removed later
+// function to handle pdf download 
 async function downloadPDF() {
-    try {
-        const content = document.getElementById("content-section");
+  try {
+    // Always read latest UI selections, even if user didn't click Apply Filters.
+    const currentFilters = getCurrentFilters();
+    const params = new URLSearchParams();
 
-        // Clone content to safely remove unwanted elements
-        const clone = content.cloneNode(true);
+    if (currentFilters.formType) params.append("formType", currentFilters.formType);
+    if (currentFilters.semester) params.append("semester", currentFilters.semester);
+    if (currentFilters.department) params.append("department", currentFilters.department);
+    if (currentFilters.programId) params.append("programId", currentFilters.programId);
 
-        // Remove non-essential elements
-        clone.querySelectorAll(".filters-section, .action-buttons, #activeFilters, #message-container, .filter-input, .filter-select, .filter-buttons").forEach(el => el.remove());
+    const query = params.toString();
+    const downloadUrl = query
+      ? `/api/consolidated-report/download-pdf?${query}`
+      : "/api/consolidated-report/download-pdf";
 
-        // Append clone temporarily to body for rendering
-        clone.style.width = "800px"; // fixed width for PDF
-        clone.style.background = "#fff";
-        clone.style.padding = "20px";
-        clone.style.boxSizing = "border-box";
-        clone.style.position = "absolute";
-        clone.style.left = "-9999px";
-        document.body.appendChild(clone);
+    const response = await fetch(downloadUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Accept: "application/pdf"
+      }
+    });
 
-        // Render clone to canvas
-        const canvas = await html2canvas(clone, { scale: 2, useCORS: true, logging: false });
-        const imgData = canvas.toDataURL("image/png",0.7);
-
-        const pdf = new jspdf.jsPDF("p", "pt", "a4");
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-
-        const imgWidth = pdfWidth;
-        const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        // Add first page
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-
-        // Add extra pages if content is long
-        while (heightLeft > 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-            heightLeft -= pdfHeight;
-        }
-
-        pdf.save(`consolidated-forms-${new Date().toISOString().split("T")[0]}.pdf`);
-
-        // Remove temporary clone
-        document.body.removeChild(clone);
-
-    } catch (err) {
-        console.error("PDF download failed:", err);
-        alert("PDF download failed: " + err.message);
+    const contentType = response.headers.get("content-type") || "";
+    if (!response.ok || !contentType.includes("application/pdf")) {
+      let message = "Failed to download PDF";
+      try {
+        const data = await response.clone().json();
+        if (data?.message) message = data.message;
+        if (data?.error) message = data.error;
+      } catch {
+        // Keep generic message when response is not JSON.
+      }
+      throw new Error(message);
     }
+
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = "consolidated-report.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    window.URL.revokeObjectURL(blobUrl);
+
+  } catch (err) {
+    console.error("PDF download failed:", err);
+    alert("PDF download failed");
+  }
+}
+
+// async function downloadPDF() {
+//     try {
+//         const content = document.getElementById("content-section");
+
+//         // Clone content to safely remove unwanted elements
+//         const clone = content.cloneNode(true);
+
+//         // Remove non-essential elements
+//         clone.querySelectorAll(".filters-section, .action-buttons, #activeFilters, #message-container, .filter-input, .filter-select, .filter-buttons").forEach(el => el.remove());
+
+//         // Append clone temporarily to body for rendering
+//         clone.style.width = "800px"; // fixed width for PDF
+//         clone.style.background = "#fff";
+//         clone.style.padding = "20px";
+//         clone.style.boxSizing = "border-box";
+//         clone.style.position = "absolute";
+//         clone.style.left = "-9999px";
+//         document.body.appendChild(clone);
+
+//         // Render clone to canvas
+//         const canvas = await html2canvas(clone, { scale: 2, useCORS: true, logging: false });
+//         const imgData = canvas.toDataURL("image/png",0.7);
+
+//         const pdf = new jspdf.jsPDF("p", "pt", "a4");
+//         const pdfWidth = pdf.internal.pageSize.getWidth();
+//         const pdfHeight = pdf.internal.pageSize.getHeight();
+
+//         const imgWidth = pdfWidth;
+//         const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+//         let heightLeft = imgHeight;
+//         let position = 0;
+
+//         // Add first page
+//         pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+//         heightLeft -= pdfHeight;
+
+//         // Add extra pages if content is long
+//         while (heightLeft > 0) {
+//             position = heightLeft - imgHeight;
+//             pdf.addPage();
+//             pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+//             heightLeft -= pdfHeight;
+//         }
+
+//         pdf.save(`consolidated-forms-${new Date().toISOString().split("T")[0]}.pdf`);
+
+//         // Remove temporary clone
+//         document.body.removeChild(clone);
+
+//     } catch (err) {
+//         console.error("PDF download failed:", err);
+//         alert("PDF download failed: " + err.message);
+//     }
+// }
+// function to handle excel download
+async function downloadExcel() {
+  try {
+    // Always read latest UI selections, even if user didn't click Apply Filters.
+    const currentFilters = getCurrentFilters();
+    const params = new URLSearchParams();
+    if (currentFilters.formType) params.append("formType", currentFilters.formType);
+    if (currentFilters.semester) params.append("semester", currentFilters.semester);
+    if (currentFilters.department) params.append("department", currentFilters.department);
+    if (currentFilters.programId) params.append("programId", currentFilters.programId);
+
+    const query = params.toString();
+    const downloadUrl = query
+      ? `/api/consolidated-report/download-excel?${query}`
+      : "/api/consolidated-report/download-excel";
+
+    const response = await fetch(downloadUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      }
+    });
+
+    const contentType = response.headers.get("content-type") || "";
+    if (!response.ok || !contentType.includes("spreadsheetml")) {
+      let message = "Failed to download Excel";
+      try {
+        const data = await response.clone().json();
+        if (data?.message) message = data.message;
+      } catch {
+        // Keep generic fallback message
+      }
+      throw new Error(message);
+    }
+
+    const blob = await response.blob();
+
+    // Create download link
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = blobUrl;
+    a.download = `Annexure_Report_${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+    document.body.appendChild(a);
+    a.click();
+
+    a.remove();
+    window.URL.revokeObjectURL(blobUrl);
+
+  } catch (error) {
+    console.error("Error downloading excel:", error);
+    alert(error.message || "Excel download failed");
+  }
 }
 
 /* ================= SUMMARY ================= */
@@ -327,12 +417,7 @@ function formatFieldValue(value) {
 /* ================= FILTERING ================= */
 
 function applyFilters() {
-    activeFilters = {
-        formType: document.getElementById("filterFormType").value,
-        semester: document.getElementById("filterSemester").value,
-        department: document.getElementById("filterDepartment").value,
-        programId: document.getElementById("filterProgramId").value.trim()
-    };
+    activeFilters = getCurrentFilters();
 
     filteredData = filterData(allData, activeFilters);
     renderSummary(getSummaryFromFiltered(filteredData));

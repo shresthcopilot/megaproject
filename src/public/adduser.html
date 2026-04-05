@@ -196,114 +196,154 @@
     </form>
   </div>
 
-  <script>
-    const form = document.getElementById("registerForm");
-    const btn = document.getElementById("submitBtn");
+ <script>
+const form = document.getElementById("registerForm");
+const btn = document.getElementById("submitBtn");
 
-    const customSelect = document.getElementById("customSelect");
-    const selected = customSelect.querySelector(".selected");
-    const optionList = customSelect.querySelector(".options");
-    const options = optionList.querySelectorAll("li");
-    const passwordInput = document.getElementById("password");
-    const confirmInput = document.getElementById("confirmPassword");
-    const passwordError = document.getElementById("passwordError");
+// Dropdown
+const customSelect = document.getElementById("customSelect");
+const selected = customSelect.querySelector(".selected");
+const optionList = customSelect.querySelector(".options");
+const options = optionList.querySelectorAll("li");
 
-    function validatePasswords() {
-      if (!confirmInput.value) {
-        passwordError.style.display = "none";
-        btn.disabled = false;
-        return;
-      }
+// Inputs
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const confirmInput = document.getElementById("confirmPassword");
+const passwordError = document.getElementById("passwordError");
 
-      if (passwordInput.value !== confirmInput.value) {
-        passwordError.style.display = "block";
-        btn.disabled = true;
-      } else {
-        passwordError.style.display = "none";
-        btn.disabled = false;
-      }
+// ================== UTIL ==================
+
+// Sanitize input (basic XSS protection)
+function sanitizeInput(input) {
+  return input.replace(/[<>"'`;(){}]/g, "").trim();
+}
+
+// Show message (replace alert)
+function showMessage(msg, type = "error") {
+  console.log(type.toUpperCase() + ":", msg);
+  alert(msg); // replace with UI later if needed
+}
+
+// ================== VALIDATION ==================
+
+function validateUsername(username) {
+  if (!username) return "Username is required";
+  if (username.length < 3) return "Username must be at least 3 characters";
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    return "Only letters, numbers, underscore allowed";
+  }
+  return null;
+}
+
+function validatePassword(password) {
+  if (password.length < 8) return "Minimum 8 characters required";
+  if (!/[A-Z]/.test(password)) return "Must include uppercase letter";
+  if (!/[a-z]/.test(password)) return "Must include lowercase letter";
+  if (!/[0-9]/.test(password)) return "Must include a number";
+  if (!/[@$!%*?&]/.test(password)) return "Must include special character (@$!%*?&)";
+  return null;
+}
+
+function validatePasswordsMatch() {
+  if (!confirmInput.value) {
+    passwordError.style.display = "none";
+    return true;
+  }
+
+  if (passwordInput.value !== confirmInput.value) {
+    passwordError.style.display = "block";
+    return false;
+  }
+
+  passwordError.style.display = "none";
+  return true;
+}
+
+// Live validation
+passwordInput.addEventListener("input", validatePasswordsMatch);
+confirmInput.addEventListener("input", validatePasswordsMatch);
+
+// ================== DROPDOWN ==================
+
+selected.addEventListener("click", () => {
+  optionList.style.display =
+    optionList.style.display === "block" ? "none" : "block";
+});
+
+options.forEach(opt => {
+  opt.addEventListener("click", () => {
+    selected.textContent = opt.textContent;
+    selected.dataset.value = opt.dataset.value;
+    optionList.style.display = "none";
+  });
+});
+
+document.addEventListener("click", e => {
+  if (!customSelect.contains(e.target)) optionList.style.display = "none";
+});
+
+// ================== SUBMIT ==================
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  let username = sanitizeInput(usernameInput.value);
+  let password = sanitizeInput(passwordInput.value);
+  let confirmPassword = sanitizeInput(confirmInput.value);
+  const role = selected.dataset.value;
+
+  // 🔍 Validate
+  const userError = validateUsername(username);
+  if (userError) return showMessage(userError);
+
+  const passError = validatePassword(password);
+  if (passError) return showMessage(passError);
+
+  if (password !== confirmPassword) {
+    return showMessage("Passwords do not match");
+  }
+
+  if (!role) return showMessage("Please select a role");
+
+  // 🚫 Prevent multiple clicks
+  btn.disabled = true;
+  btn.textContent = "Registering...";
+
+  try {
+    const res = await fetch("/api/register", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ username, password, role })
+    });
+
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      throw new Error("Invalid server response");
     }
 
-    passwordInput.addEventListener("input", validatePasswords);
-    confirmInput.addEventListener("input", validatePasswords);
+    if (!res.ok) throw new Error(data.message || "Registration failed");
 
-    // dropdown toggle
-    selected.addEventListener("click", () => {
-      optionList.style.display =
-        optionList.style.display === "block" ? "none" : "block";
-    });
+    showMessage("Registration successful", "success");
 
-    // select option
-    options.forEach(opt => {
-      opt.addEventListener("click", () => {
-        selected.textContent = opt.textContent;
-        selected.dataset.value = opt.dataset.value;
-        optionList.style.display = "none";
-      });
-    });
+    // Redirect after short delay
+    setTimeout(() => {
+      window.location.href = "admindashboard.html";
+    }, 1000);
 
-    // close outside
-    document.addEventListener("click", e => {
-      if (!customSelect.contains(e.target)) optionList.style.display = "none";
-    });
-
-    // submit
-    form.addEventListener("submit", async e => {
-      e.preventDefault();
-
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const role = selected.dataset.value;
-      if (password !== confirmInput.value) {
-        alert("Passwords do not match");
-        btn.disabled = false;
-        btn.textContent = "Register";
-        return;
-      }
-
-
-      if (!role) return alert("Select a role");
-
-      btn.disabled = true;
-      btn.textContent = "Registering...";
-
-      try {
-        const res = await fetch("/api/register", {
-          method: "POST",
-          credentials: "include", // 🔥 REQUIRED for cookies
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password, role })
-        });
-
-
-        let data;
-        const contentType = res.headers.get("content-type");
-
-        if (contentType && contentType.includes("application/json")) {
-          data = await res.json();
-        } else {
-          const text = await res.text();
-          console.error("Non-JSON response:", text);
-          throw new Error("Server returned HTML instead of JSON");
-        }
-
-        if (!res.ok) throw new Error(data.error || "Failed");
-
-
-
-        alert("Registration Successful");
-        window.location.href = "admindashboard.html";
-
-      } catch (err) {
-        alert(err.message || "Server error");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Register";
-      }
-    });
-  </script>
-
-
+  } catch (err) {
+    showMessage(err.message || "Server error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Register";
+  }
+});
+</script>
   
   
 

@@ -17,22 +17,61 @@ const extractToken = (req) => {
 
   return null;
 };
+// Detect API request
+const isApiRequest = (req) => {
+  return (
+    req.headers.accept?.includes("application/json") ||
+    req.originalUrl.startsWith("/api")
+  );
+};
 
 
 // Middleware: authentication required
 export const authMiddleware = (req, res, next) => {
-    const token = extractToken(req);
-    if (!token) return next(new ApiError(401, "No token, authorization denied"));
+  const token = extractToken(req);
 
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
-        return next();
-    } catch (err) {
-        return next(new ApiError(401, "Invalid or expired token"));
+  // ❌ No token
+  if (!token) {
+    if (isApiRequest(req)) {
+      return res.status(401).json({
+        success: false,
+        message: "Access denied. Please login first.",
+      });
+    } else {
+      return res.redirect("/login");
     }
-};
+  }
 
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    return next();
+  } catch (err) {
+    console.error("Auth Error:", err.message);
+
+    // 🔥 Token expired
+    if (err.name === "TokenExpiredError") {
+      if (isApiRequest(req)) {
+        return res.status(401).json({
+          success: false,
+          message: "Session expired. Please login again.",
+        });
+      } else {
+        return res.redirect("/");
+      }
+    }
+
+    // 🔥 Invalid token
+    if (isApiRequest(req)) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token. Please login again.",
+      });
+    } else {
+      return res.redirect("/login?error=invalid");
+    }
+  }
+};
 // Middleware: optional authentication
 export const optionalAuth = (req, res, next) => {
     const token = extractToken(req);
