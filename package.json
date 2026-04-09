@@ -17,7 +17,7 @@
     "jwt",
     "etc."
   ],
-  "author": "Ankit rajak",
+  "author": "Ankit rajak-shresth soni",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",
