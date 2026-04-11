@@ -22,15 +22,15 @@ const CERTIFICATE_DIRS = {
     path.join(UPLOAD_ROOT, "pc-file"),
     path.join(UPLOAD_ROOT, "pc"),
     path.join(UPLOAD_ROOT, "pc-certificate"),
-    path.join(UPLOAD_ROOT, "vac-broucher")
-  ]
+    path.join(UPLOAD_ROOT, "vac-broucher"),
+  ],
 };
 
 function createCertificateDownloadToken(formType, fileName) {
   return jwt.sign(
     { type: "certificate_download", formType, fileName },
     JWT_SECRET,
-    { expiresIn: CERT_LINK_TTL }
+    { expiresIn: CERT_LINK_TTL },
   );
 }
 
@@ -53,13 +53,14 @@ function buildProgramIdFilter(programId) {
   return {
     $or: [
       { program_Id: { $regex: programId, $options: "i" } },
-      { programId: { $regex: programId, $options: "i" } }
-    ]
+      { programId: { $regex: programId, $options: "i" } },
+    ],
   };
 }
 
 function normalizeSemester(semester) {
-  if (semester === undefined || semester === null || semester === "") return semester;
+  if (semester === undefined || semester === null || semester === "")
+    return semester;
   const parsed = Number(semester);
   return Number.isNaN(parsed) ? semester : parsed;
 }
@@ -72,7 +73,7 @@ function buildFilter({
   includeProgramId = true,
   includeSemester = true,
   includeDepartment = true,
-  includeAcademicYear = false
+  includeAcademicYear = false,
 }) {
   const filter = includeProgramId ? buildProgramIdFilter(programId) : {};
 
@@ -80,7 +81,7 @@ function buildFilter({
     const normalizedSemester = normalizeSemester(semester);
     // Support collections where semester is stored as number in some docs and string in others.
     filter.semester = {
-      $in: [normalizedSemester, String(semester)]
+      $in: [normalizedSemester, String(semester)],
     };
   }
   if (includeDepartment && department) {
@@ -94,7 +95,6 @@ function buildFilter({
 }
 
 // ✅ NEW FUNCTION for pdf generation - combines all form data into a single PDF report
-
 
 export const generateEnhancedPDF = async (res, data) => {
   try {
@@ -132,9 +132,15 @@ export const generateEnhancedPDF = async (res, data) => {
     const drawBox = (x, y, label, value) => {
       doc.rect(x, y, 130, 55).fillAndStroke("#f4f6f7", "#d5d8dc");
 
-      doc.fillColor("#2c3e50").fontSize(11).text(label, x + 10, y + 10);
+      doc
+        .fillColor("#2c3e50")
+        .fontSize(11)
+        .text(label, x + 10, y + 10);
 
-      doc.fillColor("#2980b9").fontSize(18).text(value || 0, x + 10, y + 28);
+      doc
+        .fillColor("#2980b9")
+        .fontSize(18)
+        .text(value || 0, x + 10, y + 28);
     };
 
     let startX = 40;
@@ -171,7 +177,10 @@ export const generateEnhancedPDF = async (res, data) => {
     doc.moveDown(1);
 
     vacData.forEach((item, i) => {
-      doc.fontSize(13).fillColor("#2c3e50").text(`VAC Forms #${i + 1}`);
+      doc
+        .fontSize(13)
+        .fillColor("#2c3e50")
+        .text(`VAC Forms #${i + 1}`);
       doc.moveDown(0.5);
 
       doc.fontSize(10).fillColor("black");
@@ -200,10 +209,8 @@ export const generateEnhancedPDF = async (res, data) => {
       doc.text(`Coordinator: ${item.coordinatorName || "-"}`);
       doc.text(
         `Created At: ${
-          item.createdAt
-            ? new Date(item.createdAt).toLocaleString()
-            : "-"
-        }`
+          item.createdAt ? new Date(item.createdAt).toLocaleString() : "-"
+        }`,
       );
 
       doc.moveDown(1);
@@ -211,20 +218,19 @@ export const generateEnhancedPDF = async (res, data) => {
       // =========================
       // 🖼️ VAC IMAGE (COMMENTED)
       // =========================
-      
+
       if (item.uploadedFile) {
         const imagePath = path.join(
           process.cwd(),
           "uploads",
           "vac-broucher",
-          item.uploadedFile
+          item.uploadedFile,
         );
 
         if (fs.existsSync(imagePath)) {
           doc.image(imagePath, { fit: [200, 150] });
         }
       }
-      
 
       doc.moveTo(40, doc.y).lineTo(550, doc.y).stroke("#ccc");
       doc.moveDown(1);
@@ -237,15 +243,15 @@ export const generateEnhancedPDF = async (res, data) => {
     // =========================
     doc.addPage();
 
-    doc
-      .fontSize(18)
-      .fillColor("#2c3e50")
-      .text("PC Forms", { underline: true });
+    doc.fontSize(18).fillColor("#2c3e50").text("PC Forms", { underline: true });
 
     doc.moveDown(1);
 
     pcData.forEach((item, i) => {
-      doc.fontSize(13).fillColor("#2c3e50").text(`PC Forms #${i + 1}`);
+      doc
+        .fontSize(13)
+        .fillColor("#2c3e50")
+        .text(`PC Forms #${i + 1}`);
       doc.moveDown(0.5);
 
       doc.fontSize(10).fillColor("black");
@@ -314,26 +320,28 @@ export const generateEnhancedPDF = async (res, data) => {
 
 export const downloadPDF = async (req, res) => {
   try {
-    const { formType, department, programId, academicYear, semester } = req.query;
-    const selectedFormType = String(formType || "").trim().toLowerCase();
+    const { formType, department, programId, academicYear, semester } =
+      req.query;
+    const selectedFormType = String(formType || "")
+      .trim()
+      .toLowerCase();
     const matchesFormType = (label) =>
       !selectedFormType || selectedFormType === label.toLowerCase();
 
     const vacFilter = buildFilter({
       programId,
       includeSemester: false,
-      includeDepartment: false
+      includeDepartment: false,
     });
     const pcFilter = buildFilter({
       programId,
       semester,
       department,
       academicYear,
-      includeAcademicYear: true
+      includeAcademicYear: true,
     });
     const otherFilter = buildFilter({ programId, semester, department });
 
-  
     const [
       vacData,
       pcData,
@@ -348,16 +356,20 @@ export const downloadPDF = async (req, res) => {
       matchesFormType("VAC")
         ? VacEntry.find(vacFilter).populate("courses").lean()
         : [],
-      matchesFormType("PC")
-        ? PcDetails.find(pcFilter).lean()
-        : [],
-      
+      matchesFormType("PC") ? PcDetails.find(pcFilter).lean() : [],
+
       matchesFormType("Library") ? Library.countDocuments(otherFilter) : 0,
       matchesFormType("E-Content") ? EContent.countDocuments(otherFilter) : 0,
       matchesFormType("Capacity") ? Capacity.countDocuments(otherFilter) : 0,
-      matchesFormType("Teaching & Learning") ? Teaching.countDocuments(otherFilter) : 0,
-      matchesFormType("Experiential") ? Experiential.countDocuments(otherFilter) : 0,
-      matchesFormType("Learner Support") ? LearnerSupport.countDocuments(otherFilter) : 0,
+      matchesFormType("Teaching & Learning")
+        ? Teaching.countDocuments(otherFilter)
+        : 0,
+      matchesFormType("Experiential")
+        ? Experiential.countDocuments(otherFilter)
+        : 0,
+      matchesFormType("Learner Support")
+        ? LearnerSupport.countDocuments(otherFilter)
+        : 0,
       matchesFormType("PC") ? PcDetails.countDocuments(pcFilter) : 0,
     ]);
 
@@ -381,13 +393,12 @@ export const downloadPDF = async (req, res) => {
         pcCount,
     };
 
-    await generateEnhancedPDF(res, { summary, vacData ,pcData});
+    await generateEnhancedPDF(res, { summary, vacData, pcData });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error generating PDF");
   }
 };
-
 
 // export const downloadPDF = async (req, res) => {
 //   try {
@@ -552,7 +563,11 @@ export const downloadPDF = async (req, res) => {
 // };
 export const getConsolidatedData = async (req, res) => {
   try {
-    if (!mongoose || !mongoose.connection || mongoose.connection.readyState !== 1) {
+    if (
+      !mongoose ||
+      !mongoose.connection ||
+      mongoose.connection.readyState !== 1
+    ) {
       return res.status(503).json({ error: "DB not connected" });
     }
 
@@ -565,11 +580,20 @@ export const getConsolidatedData = async (req, res) => {
       experiential: [],
       learnerSupport: [],
       pc: [],
-      summary: {}
+      summary: {},
     };
 
     // Fetch all form types
-    const [vacData, libraryData, econtentData, capacityData, teachingData, experientialData, learnerSupportData, pcData] = await Promise.all([
+    const [
+      vacData,
+      libraryData,
+      econtentData,
+      capacityData,
+      teachingData,
+      experientialData,
+      learnerSupportData,
+      pcData,
+    ] = await Promise.all([
       VacEntry.find({}).lean().exec(),
       Library.find({}).lean().exec(),
       EContent.find({}).lean().exec(),
@@ -577,56 +601,72 @@ export const getConsolidatedData = async (req, res) => {
       Teaching.find({}).lean().exec(),
       Experiential.find({}).lean().exec(),
       LearnerSupport.find({}).lean().exec(),
-      PcDetails.find({}).lean().exec()
+      PcDetails.find({}).lean().exec(),
     ]);
 
     // Format and add form type to each entry
     consolidatedData.vac = vacData.map((d) => ({
       formType: "VAC",
       ...d,
-      createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+      createdAt: d.createdAt
+        ? new Date(d.createdAt).toISOString()
+        : new Date().toISOString(),
     }));
 
     consolidatedData.library = libraryData.map((d) => ({
       formType: "Library",
       ...d,
-      createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+      createdAt: d.createdAt
+        ? new Date(d.createdAt).toISOString()
+        : new Date().toISOString(),
     }));
 
     consolidatedData.econtent = econtentData.map((d) => ({
       formType: "E-Content",
       ...d,
-      createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+      createdAt: d.createdAt
+        ? new Date(d.createdAt).toISOString()
+        : new Date().toISOString(),
     }));
 
     consolidatedData.capacity = capacityData.map((d) => ({
       formType: "Capacity",
       ...d,
-      createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+      createdAt: d.createdAt
+        ? new Date(d.createdAt).toISOString()
+        : new Date().toISOString(),
     }));
 
     consolidatedData.teaching = teachingData.map((d) => ({
       formType: "Teaching & Learning",
       ...d,
-      createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+      createdAt: d.createdAt
+        ? new Date(d.createdAt).toISOString()
+        : new Date().toISOString(),
     }));
 
     consolidatedData.experiential = experientialData.map((d) => ({
       formType: "Experiential",
       ...d,
-      createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+      createdAt: d.createdAt
+        ? new Date(d.createdAt).toISOString()
+        : new Date().toISOString(),
     }));
 
     consolidatedData.learnerSupport = learnerSupportData.map((d) => ({
       formType: "Learner Support",
       ...d,
-      createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+      createdAt: d.createdAt
+        ? new Date(d.createdAt).toISOString()
+        : new Date().toISOString(),
     }));
 
     consolidatedData.pc = pcData.map((d) => ({
       formType: "PC",
       ...d,
-      createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+      createdAt: d.createdAt
+        ? new Date(d.createdAt).toISOString()
+        : new Date().toISOString(),
     }));
 
     // Generate summary
@@ -639,15 +679,15 @@ export const getConsolidatedData = async (req, res) => {
       totalExperiential: experientialData.length,
       totalLearnerSupport: learnerSupportData.length,
       totalPC: pcData.length,
-      grandTotal: 
-        vacData.length + 
-        libraryData.length + 
-        econtentData.length + 
-        capacityData.length + 
-        teachingData.length + 
-        experientialData.length + 
-        learnerSupportData.length + 
-        pcData.length
+      grandTotal:
+        vacData.length +
+        libraryData.length +
+        econtentData.length +
+        capacityData.length +
+        teachingData.length +
+        experientialData.length +
+        learnerSupportData.length +
+        pcData.length,
     };
 
     res.json(consolidatedData);
@@ -877,13 +917,15 @@ export const getConsolidatedData = async (req, res) => {
 //     console.error(err);
 //     res.status(500).send("Excel generation failed");
 //   }
-// };  
+// };
 
 // controllers/consolidatedReportController.js
 export const downloadConsolidatedExcel = async (req, res) => {
   try {
     const { formType, semester, department, programId } = req.query;
-    const selectedFormType = String(formType || "").trim().toLowerCase();
+    const selectedFormType = String(formType || "")
+      .trim()
+      .toLowerCase();
     const matchesFormType = (label) =>
       !selectedFormType || selectedFormType === label.toLowerCase();
 
@@ -891,7 +933,7 @@ export const downloadConsolidatedExcel = async (req, res) => {
     const vacFilter = buildFilter({
       programId,
       includeSemester: false,
-      includeDepartment: false
+      includeDepartment: false,
     });
     const pcFilter = buildFilter({ programId, semester, department });
     const genericFilter = buildFilter({ programId, semester, department });
@@ -907,23 +949,15 @@ export const downloadConsolidatedExcel = async (req, res) => {
       capacityData,
       teachingData,
       experientialData,
-      learnerSupportData
+      learnerSupportData,
     ] = await Promise.all([
       matchesFormType("VAC")
         ? VacEntry.find(vacFilter).populate("courses").lean()
         : [],
-      matchesFormType("PC")
-        ? PcDetails.find(pcFilter).lean()
-        : [],
-      matchesFormType("Library")
-        ? Library.find(genericFilter).lean()
-        : [],
-      matchesFormType("E-Content")
-        ? EContent.find(genericFilter).lean()
-        : [],
-      matchesFormType("Capacity")
-        ? Capacity.find(genericFilter).lean()
-        : [],
+      matchesFormType("PC") ? PcDetails.find(pcFilter).lean() : [],
+      matchesFormType("Library") ? Library.find(genericFilter).lean() : [],
+      matchesFormType("E-Content") ? EContent.find(genericFilter).lean() : [],
+      matchesFormType("Capacity") ? Capacity.find(genericFilter).lean() : [],
       matchesFormType("Teaching & Learning")
         ? Teaching.find(genericFilter).lean()
         : [],
@@ -932,7 +966,7 @@ export const downloadConsolidatedExcel = async (req, res) => {
         : [],
       matchesFormType("Learner Support")
         ? LearnerSupport.find(genericFilter).lean()
-        : []
+        : [],
     ]);
 
     const workbook = new ExcelJs.Workbook();
@@ -956,7 +990,7 @@ export const downloadConsolidatedExcel = async (req, res) => {
         "Students Completed",
         "Coordinator",
         "Created At",
-        "Brochure Download"
+        "Brochure Download",
       ];
 
       vacSheet.addRow([]);
@@ -972,9 +1006,8 @@ export const downloadConsolidatedExcel = async (req, res) => {
           : "N/A";
 
         // Ensure every VAC entry appears at least once, even if courses is empty.
-        const courses = Array.isArray(vac.courses) && vac.courses.length
-          ? vac.courses
-          : [{}];
+        const courses =
+          Array.isArray(vac.courses) && vac.courses.length ? vac.courses : [{}];
 
         courses.forEach((course) => {
           const row = vacSheet.addRow([
@@ -987,14 +1020,14 @@ export const downloadConsolidatedExcel = async (req, res) => {
             course.studentsCompleted || "",
             vac.coordinatorName,
             new Date(vac.createdAt).toLocaleString(),
-            fileLink
+            fileLink,
           ]);
 
           // Make link clickable
           if (vac.uploadedFile) {
             row.getCell(10).value = {
               text: "Download",
-              hyperlink: fileLink
+              hyperlink: fileLink,
             };
           }
         });
@@ -1018,7 +1051,7 @@ export const downloadConsolidatedExcel = async (req, res) => {
         "Semester",
         "Department",
         "Created At",
-        "Certificate Download"
+        "Certificate Download",
       ]);
 
       pcData.forEach((pc) => {
@@ -1037,13 +1070,13 @@ export const downloadConsolidatedExcel = async (req, res) => {
           pc.semester,
           pc.department,
           new Date(pc.createdAt).toLocaleString(),
-          fileLink
+          fileLink,
         ]);
 
         if (pc.uploadedFile) {
           row.getCell(7).value = {
             text: "Download",
-            hyperlink: fileLink
+            hyperlink: fileLink,
           };
         }
       });
@@ -1061,7 +1094,7 @@ export const downloadConsolidatedExcel = async (req, res) => {
       sheet.mergeCells("A1:H1");
 
       const headers = Object.keys(data[0]).filter(
-        (k) => !["_id", "__v"].includes(k)
+        (k) => !["_id", "__v"].includes(k),
       );
 
       sheet.addRow([]);
@@ -1084,17 +1117,16 @@ export const downloadConsolidatedExcel = async (req, res) => {
     // =========================
     res.setHeader(
       "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
 
     res.setHeader(
       "Content-Disposition",
-      "attachment; filename=Annexure_Report.xlsx"
+      "attachment; filename=Annexure_Report.xlsx",
     );
 
     await workbook.xlsx.write(res);
     res.end();
-
   } catch (err) {
     console.error(err);
     res.status(500).send("Excel generation failed");
@@ -1109,16 +1141,22 @@ export const downloadCertificateFile = async (req, res) => {
     const token = String(req.query.token || "");
 
     if (!safeFileName) {
-      return res.status(400).json({ success: false, message: "Missing file name" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing file name" });
     }
 
     if (safeFileName !== rawFileName) {
-      return res.status(400).json({ success: false, message: "Invalid file name" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid file name" });
     }
 
     const candidateDirs = CERTIFICATE_DIRS[formType];
     if (!candidateDirs) {
-      return res.status(400).json({ success: false, message: "Invalid form type" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid form type" });
     }
 
     // Allow either logged-in request (browser app) OR valid signed link (Excel/opened externally).
@@ -1130,7 +1168,7 @@ export const downloadCertificateFile = async (req, res) => {
     if (!isAuthorizedUser && !isValidSignedLink) {
       return res.status(401).json({
         success: false,
-        message: "Access denied. Please login first."
+        message: "Access denied. Please login first.",
       });
     }
 
@@ -1144,17 +1182,19 @@ export const downloadCertificateFile = async (req, res) => {
     }
 
     if (!filePath) {
-      return res.status(404).json({ success: false, message: "Certificate file not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Certificate file not found" });
     }
 
     return res.download(filePath, safeFileName);
   } catch (err) {
     console.error("Certificate download error:", err);
-    return res.status(500).json({ success: false, message: "Failed to download certificate" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to download certificate" });
   }
 };
-
-
 
 // Helper function to generate CSV
 function generateCSV(data) {
@@ -1165,18 +1205,18 @@ function generateCSV(data) {
     data.reduce((acc, row) => {
       Object.keys(row).forEach((k) => acc.add(k));
       return acc;
-    }, new Set())
+    }, new Set()),
   );
 
   // Sort keys to keep formType first
-  const sortedKeys = ["formType", ...keys.filter(k => k !== "formType")];
+  const sortedKeys = ["formType", ...keys.filter((k) => k !== "formType")];
 
   const escape = escapeCsvValue;
 
   const header = sortedKeys.join(",");
 
-  const lines = data.map((row) => 
-    sortedKeys.map((key) => escape(row[key])).join(",")
+  const lines = data.map((row) =>
+    sortedKeys.map((key) => escape(row[key])).join(","),
   );
 
   return [header, ...lines].join("\n");
@@ -1184,27 +1224,45 @@ function generateCSV(data) {
 
 function escapeCsvValue(value) {
   if (value === null || value === undefined) return "";
-  
-  let stringValue = typeof value === "object" ? JSON.stringify(value) : String(value);
-  
+
+  let stringValue =
+    typeof value === "object" ? JSON.stringify(value) : String(value);
+
   // If value contains comma, quote, or newline, wrap in quotes
-  if (stringValue.includes(",") || stringValue.includes('"') || stringValue.includes("\n")) {
+  if (
+    stringValue.includes(",") ||
+    stringValue.includes('"') ||
+    stringValue.includes("\n")
+  ) {
     // Escape quotes by doubling them
     stringValue = stringValue.replace(/"/g, '""');
     return `"${stringValue}"`;
   }
-  
+
   return stringValue;
 }
 
 // Get summary statistics
 export const getSummary = async (req, res) => {
   try {
-    if (!mongoose || !mongoose.connection || mongoose.connection.readyState !== 1) {
+    if (
+      !mongoose ||
+      !mongoose.connection ||
+      mongoose.connection.readyState !== 1
+    ) {
       return res.status(503).json({ error: "DB not connected" });
     }
 
-    const [vacCount, libraryCount, econtentCount, capacityCount, teachingCount, experientialCount, learnerSupportCount, pcCount] = await Promise.all([
+    const [
+      vacCount,
+      libraryCount,
+      econtentCount,
+      capacityCount,
+      teachingCount,
+      experientialCount,
+      learnerSupportCount,
+      pcCount,
+    ] = await Promise.all([
       VacEntry.countDocuments({}),
       Library.countDocuments({}),
       EContent.countDocuments({}),
@@ -1212,7 +1270,7 @@ export const getSummary = async (req, res) => {
       Teaching.countDocuments({}),
       Experiential.countDocuments({}),
       LearnerSupport.countDocuments({}),
-      PcDetails.countDocuments({})
+      PcDetails.countDocuments({}),
     ]);
 
     const summary = {
@@ -1224,7 +1282,15 @@ export const getSummary = async (req, res) => {
       experiential: experientialCount,
       learnerSupport: learnerSupportCount,
       pc: pcCount,
-      total: vacCount + libraryCount + econtentCount + capacityCount + teachingCount + experientialCount + learnerSupportCount + pcCount
+      total:
+        vacCount +
+        libraryCount +
+        econtentCount +
+        capacityCount +
+        teachingCount +
+        experientialCount +
+        learnerSupportCount +
+        pcCount,
     };
 
     res.json(summary);

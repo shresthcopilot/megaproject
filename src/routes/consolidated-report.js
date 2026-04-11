@@ -1,11 +1,11 @@
 import express from "express";
-import { 
-  getConsolidatedData, 
-  // downloadConsolidatedCSV, 
+import {
+  getConsolidatedData,
+  // downloadConsolidatedCSV,
   getSummary,
   downloadPDF,
   downloadConsolidatedExcel,
-  downloadCertificateFile
+  downloadCertificateFile,
 } from "../controllers/consolidatedReportController.js";
 import { authMiddleware, optionalAuth } from "../middleware/auth-middleware.js";
 
@@ -22,6 +22,6 @@ router.post("/download-pdf", authMiddleware, downloadPDF);
 // Download consolidated Excel report
 router.get("/download-excel", authMiddleware, downloadConsolidatedExcel);
 // Download VAC / PC certificate files with original filename
-router.get("/certificate/:formType/:fileName", optionalAuth, downloadCertificateFile);
+router.get("/certificate/:formType/:fileName",optionalAuth,downloadCertificateFile);
 
 export default router;
