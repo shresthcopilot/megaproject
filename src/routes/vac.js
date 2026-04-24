@@ -4,15 +4,34 @@ import mongoose from "mongoose";
 import Student from "../models/vac-form-model.js";
 import VacEntry from "../models/vac-model.js";
 import { authMiddleware } from "../middleware/auth-middleware.js";
-import { certificateUpload, brochureUpload} from "../middleware/multer-middleware.js";
+// import { certificateUpload, brochureUpload} from "../middleware/multer-middleware.js";
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createUploader } from "../middleware/upload-factory.js";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const router = express.Router();
+
+/* The above code is creating two instances of an uploader using the `createUploader` function. The
+first instance is for uploading certificates with a maximum size of 5MB and allowed file extensions
+of .pdf, .jpg, .jpeg, and .png. The second instance is for uploading brochures with a maximum size
+of 5MB and allowed file extensions of .pdf, .jpg, .jpeg, .png, .xlsx, and .xls. Each uploader is
+configured with a specific folder to upload the files to. */
+const certificateUpload = createUploader({
+  folder: "certificates",
+  maxSizeMB: 5,
+  allowedExt: [".pdf", ".jpg", ".jpeg", ".png"]
+});
+
+const brochureUpload = createUploader({
+  folder: "vac-broucher",
+  maxSizeMB: 5,
+  allowedExt: [".pdf", ".jpg", ".jpeg", ".png", ".xlsx", ".xls"]
+});
 
 async function readSubmissions() {
   if (

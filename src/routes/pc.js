@@ -4,11 +4,23 @@ import mongoose from "mongoose";
 import VacEntryModel from "../models/vac-model.js";
 import PcDetailsModel from "../models/pc_model.js";
 import { authMiddleware } from "../middleware/auth-middleware.js";
+// import {pcDetailsUpload } from "../middleware/multer-middleware.js";
+import { createUploader } from "../middleware/upload-factory.js";
+import path from "path";
+import fs from "fs";
 
 const router = express.Router();
+/* ==================================
+   CENTRALIZED UPLOADER FOR PC FORM
+================================== */
+const pcDetailsUpload = createUploader({
+  folder: "pc-details",
+  maxSizeMB: 5,
+  allowedExt: [".pdf", ".csv", ".xlsx", ".xls", ".jpg", ".jpeg", ".png"]
+});
 
 // POST /api/pc/submit - Submit PC form + link to coordinator's courses
-router.post("/submit", authMiddleware, async (req, res) => {
+router.post("/submit", authMiddleware, pcDetailsUpload.single("PCdocument"), async (req, res) => {
   try {
     console.log("PC /submit called by user:", req.user && req.user.id);
     console.log("PC /submit body:", JSON.stringify(req.body).slice(0, 2000));
@@ -72,7 +84,7 @@ router.post("/submit", authMiddleware, async (req, res) => {
     const pcEntry = new PcDetailsModel({
       ...formData,
       createdBy: req.user.id,
-      uploadedFile: req.file ? req.file.filename : null,
+    PCdocument: req.file ? req.file.filename : null,
       // Trim all fields
       academicYear: formData.academicYear.trim(),
       programmeCode: formData.programmeCode.trim().toUpperCase(),
@@ -85,6 +97,7 @@ router.post("/submit", authMiddleware, async (req, res) => {
       coordinatorEmail: formData.coordinatorEmail.trim().toLowerCase(),
       programmeName: formData.programmeName.trim(),
       coordinatorContact: formData.coordinatorContact.trim(),
+       
     });
 
     const savedEntry = await pcEntry.save();
@@ -97,7 +110,7 @@ router.post("/submit", authMiddleware, async (req, res) => {
         entryId: savedEntry._id,
         programmeCode: savedEntry.programmeCode,
         linkedCourses: userCourses.length,
-        uploadedFile: savedEntry.uploadedFile,
+        PCdocument: savedEntry.PCdocument,
         redirect: "/pcdashboard.html",
       });
   } catch (error) {

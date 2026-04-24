@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Governing Records</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#eef1f7;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+padding:10px;
+}
+
+.container{
+background:white;
+width:100%;
+max-width:520px;
+padding:20px;
+border-radius:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+
+.top-bar{
+height:10px;
+background:#2f466a;
+border-radius:10px 10px 0 0;
+margin:-20px -20px 15px -20px;
+}
+
+h2{
+text-align:center;
+color:#2f466a;
+font-size:22px;
+}
+
+p{
+text-align:center;
+color:#777;
+font-size:14px;
+margin-bottom:15px;
+}
+
+.section{
+border:1px solid #ddd;
+padding:12px;
+margin-top:12px;
+border-radius:10px;
+}
+
+.section b{
+font-size:14px;
+}
+
+input, textarea{
+width:100%;
+padding:10px;
+margin-top:8px;
+border:1px solid #ccc;
+border-radius:6px;
+font-size:14px;
+outline:none;
+}
+
+input:focus, textarea:focus{
+border-color:#2f466a;
+}
+
+textarea{
+height:80px;
+resize:none;
+}
+
+button{
+margin-top:18px;
+width:100%;
+padding:12px;
+background:#2f466a;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:16px;
+}
+
+button:hover{
+background:#1f3555;
+}
+
+
+@media(max-width:600px){
+
+h2{
+font-size:18px;
+}
+
+p{
+font-size:12px;
+}
+
+.container{
+padding:15px;
+}
+
+.section{
+padding:10px;
+}
+
+input, textarea{
+font-size:13px;
+padding:8px;
+}
+
+button{
+font-size:14px;
+padding:10px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="top-bar"></div>
+
+<h2>Governing Records</h2>
+<p>Monitor and analyze student academic and career progression data</p>
+
+<div class="section">
+<b>Minutes of Meetings</b>
+<input type="text" id="minutes" placeholder="Document Link">
+</div>
+
+<div class="section">
+<b>Action Taken Report (ATR)</b>
+<textarea id="atr" placeholder="Suggestions / Issues"></textarea>
+</div>
+
+<div class="section">
+<b>Document Links</b>
+<input type="text" id="doc" placeholder="+">
+</div>
+
+<button onclick="submitData()">View Report</button>
+
+</div>
+
+<script>
+function submitData(){
+
+let minutes=document.getElementById("minutes").value;
+let atr=document.getElementById("atr").value;
+let doc=document.getElementById("doc").value;
+
+if(!minutes || !atr || !doc){
+alert("Fill all fields");
+return;
+}
+
+fetch("/api/governing/save",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({minutes,atr,doc})
+})
+.then(res=>res.json())
+.then(data=>alert(data.message))
+.catch(()=>alert("Error"));
+
+}
+</script>
+
+</body>
+</html>

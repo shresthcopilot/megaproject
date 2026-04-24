@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ERP Dashboard</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI';
+        }
+
+        body {
+            background: linear-gradient(to right, #dbeafe, #e0e7ff);
+        }
+
+        /* NAVBAR */
+        .navbar {
+            height: 65px;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .logo {
+            width: 50px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .icon {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 50%;
+        }
+
+        .user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .avatar {
+            width: 35px;
+            height: 35px;
+            background: #c7d2fe;
+            border-radius: 50%;
+        }
+
+        .logout {
+            background: linear-gradient(45deg, #3b82f6, #1e3a8a);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: none;
+        }
+
+        /* LAYOUT */
+        .container {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 220px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1e3a8a, #1e293b);
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar li {
+            list-style: none;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        .main {
+            flex: 1;
+            padding: 20px;
+        }
+
+        /* CARDS */
+        .cards {
+            display: flex;
+            gap: 15px;
+        }
+
+        .card {
+            flex: 1;
+            padding: 20px;
+            color: white;
+            border-radius: 15px;
+        }
+
+        .blue {
+            background: linear-gradient(45deg, #1d4eb7, #60a5fa);
+        }
+
+        .green {
+            background: linear-gradient(45deg, #15833d, #4ade80);
+        }
+
+        .red {
+            background: linear-gradient(45deg, #821111, #f87171);
+        }
+
+        .purple {
+            background: linear-gradient(45deg, #5422ab, #a78bfa);
+        }
+
+        /* ATTENDANCE BOX */
+        .attendance-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        /* FORM */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        /* BUTTONS */
+        button {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .green-btn {
+            background: #22c55e;
+        }
+
+        .red-btn {
+            background: #ef4444;
+        }
+
+        .blue-btn {
+            background: #3b82f6;
+        }
+
+        .view-btn {
+            background: linear-gradient(45deg, #3b82f6, #1e40af);
+        }
+
+        /* ACTIONS */
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* STUDENT */
+        .student {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .btns button {
+            margin-left: 5px;
+        }
+
+        .p {
+            background: #22c55e;
+        }
+
+        .a {
+            background: #ef4444;
+        }
+
+        .l {
+            background: #3b82f6;
+        }
+
+        /* RIGHT PANEL */
+        .right {
+            width: 300px;
+            padding: 20px;
+        }
+
+        .box {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+
+        .box h4 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .lecture {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        /* AI */
+        .bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            margin-top: 5px;
+        }
+
+        .bar div {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        #presentBar {
+            background: #22c55e;
+            width: 0%;
+        }
+
+        #absentBar {
+            background: #ef4444;
+            width: 0%;
+        }
+
+        /* TREND */
+        .trend {
+            display: flex;
+            align-items: flex-end;
+            gap: 5px;
+            height: 100px;
+        }
+
+        .trend div {
+            width: 10px;
+            background: #3b82f6;
+            border-radius: 5px;
+        }
+
+        /* ACTIVITY */
+        .activity-item {
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .bottom-summary {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            font-weight: 600;
+            color: #1e3a8a;
+            font-size: 14px;
+        }
+
+        .summary-item b {
+            font-size: 16px;
+        }
+
+
+        /* LECTURE BOX */
+        .lecture-box {
+            max-height: 250px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lecture-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .view-all {
+            font-size: 12px;
+            color: #3b82f6;
+            cursor: pointer;
+        }
+
+        /* SCROLLABLE LIST */
+        .lecture-list {
+            overflow-y: auto;
+            max-height: 180px;
+            padding-right: 5px;
+        }
+
+        /* EACH ITEM */
+        .lecture-item {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lecture-time {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .lecture-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .lecture-tag {
+            font-size: 11px;
+            padding: 3px 6px;
+            border-radius: 5px;
+            background: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="nav-left">
+            <img src="../images/logo.png" class="logo">
+            <span>Prestige Institute of Management and Research</span>
+        </div>
+
+        <div class="nav-right">
+            <div class="icon"><i class="fa fa-question"></i></div>
+            <div class="icon"><i class="fa fa-cog"></i></div>
+            <div class="icon"><i class="fa fa-bell"></i></div>
+
+            <div class="user">
+                <div class="avatar"></div>
+                <span id="facultyNameDisplay">hello! Faculty</span>
+            </div>
+
+            <button class="logout" onclick="logout()">LOG OUT</button>
+        </div>
+    </div>
+
+    <div class="container">
+
+
+
+
+        <!-- MAIN -->
+        <div class="main">
+
+            <div class="cards">
+                <div class="card blue">Total Students<br><b id="total">0</b></div>
+                <div class="card green">Present Count<br><b id="present">0</b></div>
+                <div class="card red">Absent Count<br><b id="absent">0</b></div>
+                <div class="card purple">Attendance Percentage<br><b id="percent">0%</b></div>
+            </div>
+
+            <div class="attendance-box">
+                <h3>Attendance Entry</h3>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="dateInput">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Teacher Name</label>
+                        <select id="teacherNameSelect">
+                            <option>Select</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Session</label>
+                        <select id="sessionSelect">
+                            <option>Select</option>
+                            <option>Jan-June 2026</option>
+                            <option>July-Dec 2026</option>
+                            <option>Jan-June 2027</option>
+                            <option>July-Dec 2027</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Class</label>
+                        <select id="classSelect">
+                            <option>Select</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <select id="subjectSelect">
+                            <option>Select</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="view-btn" onclick="loadStudents()">View Students</button>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="green-btn" onclick="markAll('P')">All Present</button>
+                    <button class="red-btn" onclick="markAll('A')">All Absent</button>
+                    <button class="blue-btn" onclick="markAll('L')">All Leave</button>
+                    <button class="view-btn" style="background: #64748b;" onclick="resetAttendance()">Reset</button>
+                </div>
+
+                <div id="students"></div>
+
+                <div id="attendanceSummaryBottom" class="bottom-summary" style="display: none;">
+                    <div class="summary-item">Total: <b id="totalBottom">0</b></div>
+                    <div class="summary-item" style="color: #15803d;">Present: <b id="presentBottom">0</b></div>
+                    <div class="summary-item" style="color: #b91c1c;">Absent: <b id="absentBottom">0</b></div>
+                </div>
+
+                <button class="view-btn"
+                    style="width: 100%; margin-top: 15px; font-weight: bold; padding: 12px; font-size: 15px; border-radius: 10px;"
+                    onclick="saveAttendance()">Save Attendance</button>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="right">
+
+            <div class="box lecture-box">
+                <div class="lecture-header">
+                    <h4>Today's Lectures</h4>
+                    <span class="view-all">View All</span>
+                </div>
+
+                <div class="lecture-list" id="lectureList"></div>
+            </div>
+
+            <div class="box">
+                <h4>AI Insights</h4>
+                <p>Present Rate</p>
+                <div class="bar">
+                    <div id="presentBar"></div>
+                </div>
+                <p>Absent Rate</p>
+                <div class="bar">
+                    <div id="absentBar"></div>
+                </div>
+            </div>
+
+            <div class="box">
+                <h4>Attendance Trend</h4>
+                <div class="trend" id="trendChart"></div>
+            </div>
+
+            <div class="box">
+                <h4>Recent Activity</h4>
+                <div id="activity"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        let allFaculties = [];
+        let currentFacultyName = "";
+
+        // Load faculty name on page load
+        document.addEventListener("DOMContentLoaded", async () => {
+            // UI Security Check
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Security Alert: You are not logged in! Redirecting to login...");
+                window.location.href = "/";
+                return;
+            }
+
+            // Set today's date by default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("dateInput").value = today;
+
+            currentFacultyName = localStorage.getItem("user") || localStorage.getItem("username") || "Faculty";
+            document.getElementById("facultyNameDisplay").innerText = "hello! " + currentFacultyName;
+
+            try {
+                // Fetch dynamic faculty list explicitly with auth token if applicable
+                const response = await fetch('/api/faculty', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                allFaculties = await response.json();
+
+                // Initially populate all faculties
+                populateFacultyDropdown();
+            } catch (e) {
+                console.error("Failed to fetch faculty list", e);
+            }
+        });
+
+        // Listen for Teacher selection changes to filter classes
+        document.getElementById("teacherNameSelect").addEventListener("change", (e) => {
+            updateClassDropdown(e.target.value);
+        });
+
+        // Listen for Session selection changes to filter semesters (classes)
+        document.getElementById("sessionSelect").addEventListener("change", () => {
+            updateClassDropdown(document.getElementById("teacherNameSelect").value);
+        });
+
+        function populateFacultyDropdown() {
+            const selectElement = document.getElementById("teacherNameSelect");
+            const userRole = (localStorage.getItem("userRole") || "").toLowerCase();
+
+            let html = "<option>Select</option>";
+
+            // Only Admin can see "Admin" selection and all faculties
+            if (userRole === "admin") {
+                html += `<option value="Admin">Admin (All Access)</option>`;
+            }
+
+            if (Array.isArray(allFaculties)) {
+                allFaculties.forEach(fac => {
+                    const isMe = fac.name.toLowerCase() === (currentFacultyName || "").toLowerCase() ||
+                        fac.name.toLowerCase().includes(currentFacultyName.toLowerCase());
+
+                    // Faculty only sees themselves, Admin sees everyone
+                    if (userRole === "admin" || isMe) {
+                        html += `<option value="${fac.name}">${fac.name} (${fac.department || "No Dept"})</option>`;
+                    }
+                });
+            }
+
+            // Fallback if current user is not in allFaculties list but is logged in as Faculty
+            if (userRole === "faculty" && currentFacultyName && currentFacultyName !== "Faculty") {
+                const found = allFaculties.some(f => f.name.toLowerCase() === currentFacultyName.toLowerCase() || f.name.toLowerCase().includes(currentFacultyName.toLowerCase()));
+                if (!found) {
+                    html += `<option value="${currentFacultyName}">${currentFacultyName} (You)</option>`;
+                }
+            }
+
+            selectElement.innerHTML = html;
+
+            // Auto-select and lock for Faculty to prevent multi-access
+            if (userRole === "faculty") {
+                selectElement.disabled = true; // Strict access: Faculty cannot change the teacher
+
+                // Find index of current user or at least one non-Select option
+                for (let i = 0; i < selectElement.options.length; i++) {
+                    const optVal = selectElement.options[i].value.toLowerCase();
+                    if (optVal !== "select" && (optVal === currentFacultyName.toLowerCase() || optVal.includes(currentFacultyName.toLowerCase()))) {
+                        selectElement.selectedIndex = i;
+                        break;
+                    }
+                }
+
+                // If not found by name, just pick the first faculty option available
+                if (selectElement.selectedIndex === 0 && selectElement.options.length > 1) {
+                    selectElement.selectedIndex = 1;
+                }
+
+                // Load classes immediately for the selected teacher
+                if (selectElement.selectedIndex > 0) {
+                    updateClassDropdown(selectElement.value);
+                }
+            } else {
+                selectElement.disabled = false; // Admin has full access
+            }
+        }
+
+        function updateClassDropdown(facultyName) {
+            // Find the faculty object from allFaculties
+            const fac = allFaculties.find(f => f.name.toLowerCase() === (facultyName || "").toLowerCase());
+            const dep = fac ? (fac.department || "").toUpperCase() : "";
+
+            const classSelect = document.getElementById("classSelect");
+            const subjectSelect = document.getElementById("subjectSelect");
+
+            let classHtml = "<option>Select</option>";
+            let subjectHtml = "<option>Select</option>";
+
+            const userRole = (localStorage.getItem("userRole") || "").toLowerCase();
+            const isAdmin = (userRole === "admin") || facultyName.toLowerCase() === "admin" || dep.includes("ADMIN");
+
+            // If it's a Faculty member and they haven't found a department yet, 
+            // fallback to finding their OWN department from the list
+            if (!isAdmin && !dep) {
+                const me = allFaculties.find(f => f.name.toLowerCase() === (currentFacultyName || "").toLowerCase());
+                dep = me ? (me.department || "").toUpperCase() : "";
+            }
+
+            const sessionVal = document.getElementById("sessionSelect").value;
+            let sems = [1, 2, 3, 4, 5, 6];
+            if (sessionVal.startsWith("Jan-June")) {
+                sems = [2, 4, 6];
+            } else if (sessionVal.startsWith("July-Dec")) {
+                sems = [1, 3, 5];
+            }
+
+            // function to easily create options
+            const addSemsMenu = (coursePrefix) => {
+                sems.forEach(i => {
+                    classHtml += `<option>${coursePrefix} ${i} SEM A</option>`;
+                    classHtml += `<option>${coursePrefix} ${i} SEM B</option>`;
+                });
+            }
+
+            // Dynamic rule based on department string
+            if (isAdmin) {
+                addSemsMenu("LAW");
+                addSemsMenu("B.COM");
+                addSemsMenu("BBA");
+                addSemsMenu("BCA");
+
+                ["Constitutional Law", "Contract Law", "IPC", "CRPC", "Family Law", "Corporate Law", "Financial Accounting", "Corporate Accounting", "Business Statistics", "Auditing", "Taxation", "Principles of Management", "Business Economics", "Marketing Management", "Human Resource Management", "Python", "Java", "DBMS", "Operating Systems", "Data Structures"].forEach(sub => {
+                    subjectHtml += `<option>${sub}</option>`;
+                });
+            } else if (dep.includes("LAW")) {
+                addSemsMenu("LAW");
+                ["Constitutional Law", "Contract Law", "IPC", "CRPC", "Family Law", "Corporate Law", "Human Rights Law"].forEach(sub => {
+                    subjectHtml += `<option>${sub}</option>`;
+                });
+            } else if (dep.includes("B.COM") || dep.includes("BCOM") || dep.includes("COMMERCE")) {
+                addSemsMenu("B.COM");
+                ["Financial Accounting", "Corporate Accounting", "Business Statistics", "Auditing", "Taxation", "Business Law"].forEach(sub => {
+                    subjectHtml += `<option>${sub}</option>`;
+                });
+            } else if (dep.includes("BBA") || dep.includes("MANAGEMENT")) {
+                addSemsMenu("BBA");
+                ["Principles of Management", "Business Economics", "Marketing Management", "Human Resource Management", "Financial Management"].forEach(sub => {
+                    subjectHtml += `<option>${sub}</option>`;
+                });
+            } else if (dep.includes("IT") || dep.includes("BCA") || dep.includes("COMPUTER")) {
+                addSemsMenu("BCA");
+                ["Python", "Java", "DBMS", "Operating Systems", "Data Structures", "Computer Networks", "Maths"].forEach(sub => {
+                    subjectHtml += `<option>${sub}</option>`;
+                });
+            } else {
+                // If department is unknown and user is Admin, show all. If Faculty, show nothing.
+                if (isAdmin) {
+                    addSemsMenu("BCA");
+                    addSemsMenu("BBA");
+                    addSemsMenu("B.COM");
+                    addSemsMenu("LAW");
+                    ["Communication Skill", "Basic Computing", "Environmental Science"].forEach(sub => {
+                        subjectHtml += `<option>${sub}</option>`;
+                    });
+                } else {
+                    classHtml = "<option>Select Class</option>";
+                    subjectHtml = "<option>Select Subject</option>";
+                }
+            }
+
+            classSelect.innerHTML = classHtml;
+            subjectSelect.innerHTML = subjectHtml;
+
+            // Clear rendering of previous students if class list changed
+            document.getElementById("students").innerHTML = "";
+        }
+
+        let students = [];
+        let attendance = {}, trendData = [];
+
+        async function loadStudents() {
+            let selectedClass = document.getElementById("classSelect").value;
+
+            // agar class select nahi ki
+            if (selectedClass === "Select") {
+                alert("Please select class first!");
+                return;
+            }
+
+            try {
+                // Backend se students list fetch karo with auth token
+                const response = await fetch(`/api/attendance/students?class=${encodeURIComponent(selectedClass)}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                students = data.students || [];
+
+                let html = "";
+                attendance = {}; // Reset attendance map
+
+                students.forEach((s, index) => {
+                    attendance[s] = ""; // Default is empty
+                    html += `<div class="student">
+                 <span>${index + 1}. ${s}</span>
+                 <div class="btns">
+                  <button class="p" onclick="mark('${s}','P')">P</button>
+                  <button class="a" onclick="mark('${s}','A')">A</button>
+                  <button class="l" onclick="mark('${s}','L')">L</button>
+            </div>
+        </div>`;
+                });
+                document.getElementById("students").innerHTML = html;
+                document.getElementById("attendanceSummaryBottom").style.display = students.length > 0 ? "flex" : "none";
+                update();
+            } catch (error) {
+                console.error("Error drawing students:", error);
+                alert("Failed to load students from backend.");
+            }
+        }
+
+        function mark(name, val) {
+            attendance[name] = val;
+            logActivity(name + " marked " + val);
+            update();
+        }
+
+        function markAll(val) {
+            for (let s in attendance) { attendance[s] = val; }
+            logActivity("All marked " + val);
+            update();
+        }
+
+        function update() {
+            let total = students.length;
+            let p = Object.values(attendance).filter(x => x == "P").length;
+            let a = Object.values(attendance).filter(x => x == "A").length;
+            let percent = Math.round((p / total) * 100) || 0;
+
+            document.getElementById("total").innerText = total;
+            document.getElementById("present").innerText = p;
+            document.getElementById("absent").innerText = a;
+            document.getElementById("percent").innerText = percent + "%";
+
+            // Update bottom summary
+            document.getElementById("totalBottom").innerText = total;
+            document.getElementById("presentBottom").innerText = p;
+            document.getElementById("absentBottom").innerText = a;
+
+            document.getElementById("presentBar").style.width = percent + "%";
+            document.getElementById("absentBar").style.width = (100 - percent) + "%";
+
+            trendData.push(percent);
+            if (trendData.length > 10) trendData.shift();
+            renderTrend();
+        }
+
+        function renderTrend() {
+            let chart = document.getElementById("trendChart");
+            chart.innerHTML = "";
+            trendData.forEach(v => {
+                let bar = document.createElement("div");
+                bar.style.height = v + "%";
+                chart.appendChild(bar);
+            });
+        }
+
+        function logActivity(msg) {
+            let container = document.getElementById("activity");
+            let div = document.createElement("div");
+            div.className = "activity-item";
+            div.innerText = new Date().toLocaleTimeString() + " - " + msg;
+            container.prepend(div);
+        }
+
+        async function saveAttendance() {
+            let date = document.getElementById("dateInput").value;
+            let teacherName = document.getElementById("teacherNameSelect").value;
+            let session = document.getElementById("sessionSelect").value;
+            let selectedClass = document.getElementById("classSelect").value;
+            let subject = document.getElementById("subjectSelect").value;
+
+            if (!date || session === "Select" || selectedClass === "Select" || subject === "Select" || teacherName === "Select") {
+                alert("Please select Date, Teacher, Session, Class, and Subject before saving!");
+                return;
+            }
+
+            if (Object.keys(attendance).length === 0) {
+                alert("Please view students first!");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/attendance/mark', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        date,
+                        teacherName,
+                        session,
+                        studentClass: selectedClass,
+                        subject,
+                        attendance
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert("Success: " + result.message);
+                    logActivity("Attendance saved to database");
+                    const userRole = localStorage.getItem("userRole") || localStorage.getItem("role");
+                    if (userRole === "admin") {
+                        window.location.href = "admindashboard.html";
+                    } else if (userRole === "faculty") {
+                        window.location.href = "faculty.html";
+                    } else {
+                        window.history.back();
+                    }
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch (error) {
+                console.error("Error saving attendance:", error);
+                alert("Failed to connect to the server.");
+            }
+        }
+
+        // LECTURE DATA
+        const lectures = [
+            { time: "09:10 AM", subject: "Python", type: "Lab" },
+            { time: "10:00 AM", subject: "Java", type: "Theory" },
+            { time: "11:00 AM", subject: "DBMS", type: "Lecture" },
+            { time: "12:00 PM", subject: "OS", type: "Lecture" },
+            { time: "01:00 PM", subject: "AI", type: "Seminar" },
+            { time: "02:00 PM", subject: "Maths", type: "Class" }
+        ];
+
+        // RENDER LECTURES
+        function loadLectures() {
+            let html = "";
+            lectures.forEach(l => {
+                html += `
+    <div class="lecture-item">
+      <div>
+        <div class="lecture-name">${l.subject}</div>
+        <div class="lecture-time">${l.time}</div>
+      </div>
+      <div class="lecture-tag">${l.type}</div>
+    </div>`;
+            });
+
+            document.getElementById("lectureList").innerHTML = html;
+        }
+
+        // CALL FUNCTION
+        loadLectures();
+
+        function logout() {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userRole");
+            localStorage.removeItem("username");
+            window.location.href = "/";
+        }
+
+        function resetAttendance() {
+            if (!confirm("Are you sure you want to reset everything?")) return;
+
+            attendance = {};
+            students = [];
+            document.getElementById("students").innerHTML = "";
+            document.getElementById("total").innerText = "0";
+            document.getElementById("present").innerText = "0";
+            document.getElementById("absent").innerText = "0";
+            document.getElementById("percent").innerText = "0%";
+            document.getElementById("presentBar").style.width = "0%";
+            document.getElementById("absentBar").style.width = "0%";
+            document.getElementById("attendanceSummaryBottom").style.display = "none";
+
+            document.getElementById("classSelect").value = "Select";
+            document.getElementById("subjectSelect").value = "Select";
+            document.getElementById("sessionSelect").value = "Select";
+
+            logActivity("Attendance board reset");
+        }
+    </script>
+
+</body>
+
+</html>

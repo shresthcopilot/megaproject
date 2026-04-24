@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Events & Career Development</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#eef1f7;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+padding:10px;
+}
+
+.container{
+background:white;
+width:100%;
+max-width:600px;
+padding:20px;
+border-radius:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+
+.top-bar{
+height:10px;
+background:#2f466a;
+border-radius:10px 10px 0 0;
+margin:-20px -20px 15px -20px;
+}
+
+h2{
+text-align:center;
+color:#2f466a;
+font-size:22px;
+}
+
+p{
+text-align:center;
+color:#777;
+font-size:14px;
+margin-bottom:20px;
+}
+
+.section{
+border:1px solid #ddd;
+padding:15px;
+margin-top:15px;
+border-radius:10px;
+}
+
+.section b{
+display:block;
+margin-bottom:10px;
+font-size:14px;
+}
+
+.row{
+display:flex;
+gap:10px;
+}
+
+input{
+width:100%;
+padding:10px;
+border:1px solid #ccc;
+border-radius:6px;
+margin-top:8px;
+font-size:14px;
+}
+
+button{
+margin-top:20px;
+width:100%;
+padding:12px;
+background:#2f466a;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:16px;
+}
+
+button:hover{
+background:#1f3555;
+}
+
+/* 🔥 MOBILE */
+@media(max-width:600px){
+
+.row{
+flex-direction:column;
+}
+
+h2{
+font-size:18px;
+}
+
+p{
+font-size:12px;
+}
+
+input{
+font-size:13px;
+padding:8px;
+}
+
+button{
+font-size:14px;
+padding:10px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="top-bar"></div>
+
+<h2>Events, Counselling & Career Development</h2>
+
+<p>Monitor and analyze student academic and career progression data</p>
+
+<!-- Section 1 -->
+<div class="section">
+<b>Competitive Exam Preparation Sessions:</b>
+
+<div class="row">
+<input type="text" id="activity" placeholder="Activity Name">
+<input type="text" id="resource" placeholder="Resource Person">
+</div>
+
+<input type="number" id="students" placeholder="Number of Students Enrolled">
+
+</div>
+
+<!-- Section 2 -->
+<div class="section">
+<b>Career Counselling Sessions:</b>
+<input type="text" id="details" placeholder="Details">
+</div>
+
+<!-- Section 3 -->
+<div class="section">
+<b>No. of Students Participated:</b>
+<input type="text" id="participated" placeholder="Number/List">
+</div>
+
+<!-- Section 4 -->
+<div class="section">
+<b>Document Links (Report + Photos):</b>
+<input type="text" id="doc" placeholder="+">
+</div>
+
+<button onclick="submitData()">View Report</button>
+
+</div>
+
+<script>
+
+function submitData(){
+
+let activity=document.getElementById("activity").value;
+let resource=document.getElementById("resource").value;
+let students=document.getElementById("students").value;
+let details=document.getElementById("details").value;
+let participated=document.getElementById("participated").value;
+let doc=document.getElementById("doc").value;
+
+// validation
+if(!activity || !resource || !students || !details || !participated || !doc){
+alert("Please fill all fields");
+return;
+}
+
+// API call
+fetch("/api/events/save",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+activity,
+resource,
+students,
+details,
+participated,
+doc
+})
+})
+.then(res=>res.json())
+.then(()=>alert("Saved Successfully"))
+.catch(()=>alert("Error"));
+
+}
+
+</script>
+
+</body>
+</html>

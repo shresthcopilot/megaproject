@@ -59,13 +59,40 @@ export const brochureUpload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: fileFilter,
 });
+/* ==============================
+   PC DETAILS UPLOAD
+============================== */
+const pcDetailsDir = path.join(process.cwd(), "uploads", "pc-details");
+
+if (!fs.existsSync(pcDetailsDir)) {
+  fs.mkdirSync(pcDetailsDir, { recursive: true });
+}
+const pcDetailsStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, pcDetailsDir);
+  },
+  filename: (req, file, cb) => {
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    const name = path.basename(file.originalname, ext).replace(/\s+/g, "_");
+
+    cb(null, `${name}-${timestamp}${ext}`);
+  },
+});
+
+export const pcDetailsUpload = multer({
+  storage: pcDetailsStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: fileFilter,
+});
+
 
 /* ==============================
    FILE VALIDATION
 ============================== */
 
 function fileFilter(req, file, cb) {
-  const allowed = /pdf|docx|doc|jpeg|jpg|png/;
+  const allowed = /pdf|csv|excel|docx|doc|jpeg|jpg|png/;
   const ext = path.extname(file.originalname).toLowerCase();
 
   if (allowed.test(ext)) cb(null, true);

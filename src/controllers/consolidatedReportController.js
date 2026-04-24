@@ -18,12 +18,9 @@ const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
 const CERT_LINK_TTL = process.env.CERT_LINK_TTL || "24h";
 const CERTIFICATE_DIRS = {
   vac: [path.join(UPLOAD_ROOT, "vac-broucher")],
-  pc: [
-    path.join(UPLOAD_ROOT, "pc-file"),
-    path.join(UPLOAD_ROOT, "pc"),
-    path.join(UPLOAD_ROOT, "pc-certificate"),
-    path.join(UPLOAD_ROOT, "vac-broucher"),
-  ],
+  
+   pc: [path.join(process.cwd(), "uploads", "pc-details")],
+  
 };
 
 function createCertificateDownloadToken(formType, fileName) {
@@ -1051,13 +1048,13 @@ export const downloadConsolidatedExcel = async (req, res) => {
         "Semester",
         "Department",
         "Created At",
-        "Certificate Download",
+        "PC File Download",
       ]);
 
       pcData.forEach((pc) => {
-        const fileLink = pc.uploadedFile
+        const fileLink = pc.PCdocument
           ? (() => {
-              const safeFileName = String(pc.uploadedFile);
+              const safeFileName = String(pc.PCdocument);
               const token = createCertificateDownloadToken("pc", safeFileName);
               return `${req.protocol}://${req.get("host")}/api/consolidated-report/certificate/pc/${encodeURIComponent(safeFileName)}?token=${encodeURIComponent(token)}`;
             })()
@@ -1073,7 +1070,7 @@ export const downloadConsolidatedExcel = async (req, res) => {
           fileLink,
         ]);
 
-        if (pc.uploadedFile) {
+        if (pc.PCdocument ) {
           row.getCell(7).value = {
             text: "Download",
             hyperlink: fileLink,

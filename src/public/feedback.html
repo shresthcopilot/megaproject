@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Feedback</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.container{
+background:white;
+width:420px;
+padding:25px;
+border-radius:10px;
+box-shadow:0 5px 20px rgba(0,0,0,0.2);
+}
+
+h3{
+color:#2f466a;
+}
+
+textarea{
+width:100%;
+height:90px;
+border:1px solid #ccc;
+border-radius:5px;
+padding:5px;
+}
+
+button{
+background:#2f466a;
+color:white;
+border:none;
+padding:10px 20px;
+border-radius:5px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h3>Student & Stakeholder Feedback</h3>
+
+<p>Was structured feedback collected?</p>
+
+<label>
+<input type="radio" name="feedback" value="Yes"> Yes
+</label>
+
+<label style="margin-left:20px;">
+<input type="radio" name="feedback" value="No"> No
+</label>
+
+<br><br>
+
+<p>Feedback Summary Report & Corrective Actions Taken:</p>
+
+<textarea id="summary"></textarea>
+
+<br><br>
+
+<button onclick="sendFeedback()">View Report</button>
+
+</div>
+
+<script>
+
+function sendFeedback(){
+
+let radio = document.querySelector('input[name="feedback"]:checked');
+
+if(!radio){
+alert("Please select Yes or No");
+return;
+}
+
+let feedback = radio.value;
+
+let summary = document.getElementById("summary").value;
+
+fetch("/api/feedback/save",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+feedback:feedback,
+summary:summary
+})
+
+})
+
+.then(res=>res.json())
+
+.then(data=>{
+alert(data.message);
+})
+
+.catch(err=>{
+console.log(err);
+alert("Server Error");
+});
+
+}
+
+</script>
+
+</body>
+</html>
