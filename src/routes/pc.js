@@ -20,7 +20,14 @@ const pcDetailsUpload = createUploader({
 });
 
 // POST /api/pc/submit - Submit PC form + link to coordinator's courses
-router.post("/submit", authMiddleware, pcDetailsUpload.single("PCdocument"), async (req, res) => {
+router.post("/submit", authMiddleware,  pcDetailsUpload.fields([
+    { name: "PCdocument", maxCount: 1 },
+    { name: "coursesUpload", maxCount: 1 },
+    { name: "minutesMeeting", maxCount: 1 },
+    { name: "summaryRevision", maxCount: 1 },
+    { name: "newCoursesFile", maxCount: 1 },
+    { name: "employabilityUpload", maxCount: 1 }
+  ]), async (req, res) => {
   try {
     console.log("PC /submit called by user:", req.user && req.user.id);
     console.log("PC /submit body:", JSON.stringify(req.body).slice(0, 2000));
@@ -29,17 +36,22 @@ router.post("/submit", authMiddleware, pcDetailsUpload.single("PCdocument"), asy
 
     // Validate required fields
     const requiredFields = [
-      "academicYear",
-      "programmeCode",
-      "semester",
-      "yearOfIntroduction",
-      "schoolName",
-      "coordinatorName",
-      "department",
-      "coordinatorEmail",
-      "programmeName",
-      "coordinatorContact",
-    ];
+     
+        "academicYear",
+        "programmeCode",
+        "semester",
+        "yearOfIntroduction",
+        "schoolName",
+        "coordinatorName",
+        "department",
+        "coordinatorEmail",
+        "programmeName",
+        "coordinatorContact",
+        "cbcsStatus",
+        "cbcsYear",
+        "revisionStatus"
+      ];
+    
 
     for (const field of requiredFields) {
       if (!formData[field]?.trim()) {
@@ -97,6 +109,17 @@ router.post("/submit", authMiddleware, pcDetailsUpload.single("PCdocument"), asy
       coordinatorEmail: formData.coordinatorEmail.trim().toLowerCase(),
       programmeName: formData.programmeName.trim(),
       coordinatorContact: formData.coordinatorContact.trim(),
+      cbcsStatus: formData.cbcsStatus,
+cbcsYear: formData.cbcsYear,
+revisionStatus: formData.revisionStatus,
+
+        PCdocument: req.files?.PCdocument?.[0]?.filename || null,
+        coursesUpload: req.files?.coursesUpload?.[0]?.filename || null,
+        minutesMeeting: req.files?.minutesMeeting?.[0]?.filename || null,
+        summaryRevision: req.files?.summaryRevision?.[0]?.filename || null,
+        newCoursesFile: req.files?.newCoursesFile?.[0]?.filename || null,
+        employabilityUpload:
+          req.files?.employabilityUpload?.[0]?.filename || null,
        
     });
 

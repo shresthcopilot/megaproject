@@ -2,14 +2,27 @@ import express from "express";
 import EContent from "../models/econtent-model.js";
 import { authMiddleware } from "../middleware/auth-middleware.js";
 // import upload from "../middleware/multer.js"; // enable if file upload
+import { createUploader } from "../middleware/upload-factory.js";
+
+
+
 
 const router = express.Router();
+/* ==================================
+   CENTRALIZED UPLOADER FOR e-content FORM
+================================== */
+const uploadedFile = createUploader({
+  folder: "e-content",
+  maxSizeMB: 5,
+  allowedExt: [".pdf", ".csv", ".xlsx", ".xls", ".jpg", ".jpeg", ".png"]
+});
+
 
 /*  SUBMIT  */
 router.post(
   "/submit",
   authMiddleware,
-  // upload.single("file"),
+   uploadedFile.single("uploadedFile"),
   async (req, res) => {
     try {
       const p = req.body || {};

@@ -70,6 +70,33 @@ const programmeCoordinatorSchema = new mongoose.Schema(
       ref: "User",
       required: false,
     },
+     
+   
+
+    cbcsStatus: {
+  type: String,
+  enum: ["Yes", "No"],
+  required: true
+},
+     cbcsYear: {
+      type: Number, 
+      min: 2000,
+  max: 2100,// uploaded file path/name
+      default: null
+    },
+
+   revisionStatus: {
+      type: String,
+      enum: ["Yes", "No"],
+      required: true
+    },
+    coursesUpload:{type: String, default: null}, 
+    minutesMeeting: {type: String, default: null},
+    summaryRevision:  {type: String, default: null},
+    newCoursesFile: {type: String, default: null},
+    employabilityUpload:  {type: String, default: null}
+
+
   },
   { timestamps: true },
 );

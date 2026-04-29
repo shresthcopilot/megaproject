@@ -12,38 +12,50 @@ import PDFDocument from "pdfkit";
 import fs from "fs";
 import ExcelJs from "exceljs";
 import jwt from "jsonwebtoken";
+import {
+  createDownloadToken,
+  verifyDownloadToken,
+  findFile
+} from "../utils/fileDownloadManager.js";
+import {
+  makeDownloadLink,
+  setHyperlinkCell
+} from "../utils/downloadLinkHelper.js";
+import { buildPCSheet } from "../utils/buildPCSheet.js";
+import { createEmptySheet } from "../utils/excelSheetFactory.js";
 
 const UPLOAD_ROOT = path.join(process.cwd(), "uploads");
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
 const CERT_LINK_TTL = process.env.CERT_LINK_TTL || "24h";
-const CERTIFICATE_DIRS = {
-  vac: [path.join(UPLOAD_ROOT, "vac-broucher")],
+// const CERTIFICATE_DIRS = {
+//   vac: [path.join(UPLOAD_ROOT, "vac-broucher")],
   
-   pc: [path.join(process.cwd(), "uploads", "pc-details")],
+//    pc: [path.join(process.cwd(), "uploads", "pc-details")],
+//    econtent: [path.join(process.cwd(), "uploads", "e-content")],
   
-};
+// };
 
-function createCertificateDownloadToken(formType, fileName) {
-  return jwt.sign(
-    { type: "certificate_download", formType, fileName },
-    JWT_SECRET,
-    { expiresIn: CERT_LINK_TTL },
-  );
-}
+// function createCertificateDownloadToken(formType, fileName) {
+//   return jwt.sign(
+//     { type: "certificate_download", formType, fileName },
+//     JWT_SECRET,
+//     { expiresIn: CERT_LINK_TTL },
+//   );
+// }
 
-function verifyCertificateDownloadToken(token, formType, fileName) {
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    return (
-      decoded &&
-      decoded.type === "certificate_download" &&
-      decoded.formType === formType &&
-      decoded.fileName === fileName
-    );
-  } catch {
-    return false;
-  }
-}
+// function verifyCertificateDownloadToken(token, formType, fileName) {
+//   try {
+//     const decoded = jwt.verify(token, JWT_SECRET);
+//     return (
+//       decoded &&
+//       decoded.type === "certificate_download" &&
+//       decoded.formType === formType &&
+//       decoded.fileName === fileName
+//     );
+//   } catch {
+//     return false;
+//   }
+// }
 
 function buildProgramIdFilter(programId) {
   if (!programId) return {};
@@ -971,7 +983,10 @@ export const downloadConsolidatedExcel = async (req, res) => {
     // =========================
     // ✅ VAC SHEET WITH DOWNLOAD LINK
     // =========================
-    if (vacData.length) {
+   if (!vacData.length) {
+  const sheet = workbook.addWorksheet("vac");
+  sheet.addRow(["No vac data found"]);
+} else {
       const vacSheet = workbook.addWorksheet("VAC");
 
       vacSheet.addRow(["Annexure - VAC Report"]);
@@ -994,13 +1009,12 @@ export const downloadConsolidatedExcel = async (req, res) => {
       vacSheet.addRow(headers);
 
       vacData.forEach((vac) => {
-        const fileLink = vac.uploadedFile
-          ? (() => {
-              const safeFileName = String(vac.uploadedFile);
-              const token = createCertificateDownloadToken("vac", safeFileName);
-              return `${req.protocol}://${req.get("host")}/api/consolidated-report/certificate/vac/${encodeURIComponent(safeFileName)}?token=${encodeURIComponent(token)}`;
-            })()
-          : "N/A";
+       const fileLink = makeDownloadLink(
+  req,
+  "vac",
+  vac.uploadedFile,
+  createDownloadToken
+);
 
         // Ensure every VAC entry appears at least once, even if courses is empty.
         const courses =
@@ -1034,50 +1048,237 @@ export const downloadConsolidatedExcel = async (req, res) => {
     // =========================
     // ✅ PC SHEET
     // =========================
-    if (pcData.length) {
-      const pcSheet = workbook.addWorksheet("PC");
+    if (matchesFormType("PC")) {
+  buildPCSheet(workbook, pcData, req, makeDownloadLink, createDownloadToken);
+} else {
+  createEmptySheet(workbook, "PC");
+}
+   
+// if (!pcData.length) {
+//   const sheet = workbook.addWorksheet("PC");
+//   sheet.addRow(["No PC data found"]);
+// } else {
+//   const pcSheet = workbook.addWorksheet("PC");
 
-      pcSheet.addRow(["Annexure - PC Report"]);
-      pcSheet.mergeCells("A1:G1");
+//   // Title
+//   pcSheet.addRow(["Annexure - Programme Coordinator Report"]);
+//   pcSheet.mergeCells("A1:R1");
 
-      pcSheet.addRow([]);
-      pcSheet.addRow([
-        "Program ID",
-        "Coordinator",
-        "Academic Year",
-        "Semester",
-        "Department",
-        "Created At",
-        "PC File Download",
-      ]);
+//   pcSheet.getCell("A1").font = { bold: true, size: 16 };
+//   pcSheet.getCell("A1").alignment = {
+//     horizontal: "center",
+//     vertical: "middle"
+//   };
 
-      pcData.forEach((pc) => {
-        const fileLink = pc.PCdocument
-          ? (() => {
-              const safeFileName = String(pc.PCdocument);
-              const token = createCertificateDownloadToken("pc", safeFileName);
-              return `${req.protocol}://${req.get("host")}/api/consolidated-report/certificate/pc/${encodeURIComponent(safeFileName)}?token=${encodeURIComponent(token)}`;
-            })()
-          : "N/A";
+//   pcSheet.addRow([]);
 
-        const row = pcSheet.addRow([
-          pc.program_Id,
-          pc.coordinatorName,
-          pc.academicYear,
-          pc.semester,
-          pc.department,
-          new Date(pc.createdAt).toLocaleString(),
-          fileLink,
-        ]);
+//   // Header Row
+//   pcSheet.addRow([
+//     "Academic Year",
+//     "Programme Code",
+//     "Program ID",
+//     "Semester",
+//     "Year Of Introduction",
+//     "School Name",
+//     "Coordinator Name",
+//     "Department",
+//     "Coordinator Email",
+//     "Coordinator Contact",
+//     "Programme Name",
 
-        if (pc.PCdocument ) {
-          row.getCell(7).value = {
-            text: "Download",
-            hyperlink: fileLink,
-          };
-        }
-      });
+//     "CBCS Status",
+//     "CBCS Year",
+//     "Revision Status",
+
+//     "PC Document",
+//     "Courses Upload",
+//     "Minutes Meeting",
+//     "Summary Revision",
+//     "List of new courses introduced",
+//     "Employability Upload"
+//   ]);
+
+//   // Style Header
+//   const headerRow = pcSheet.getRow(3);
+//   headerRow.font = { bold: true };
+//   headerRow.alignment = { horizontal: "center", vertical: "middle" };
+
+//   pcData.forEach((pc) => {
+//     const row = pcSheet.addRow([
+//       pc.academicYear || "",
+//       pc.programmeCode || "",
+//       pc.program_Id || "",
+//       Number(pc.semester || 0),
+//       pc.yearOfIntroduction || "",
+//       pc.schoolName || "",
+//       pc.coordinatorName || "",
+//       pc.department || "",
+//       pc.coordinatorEmail || "",
+//       pc.coordinatorContact || "",
+//       pc.programmeName || "",
+
+//       pc.cbcsStatus || "",
+//       pc.cbcsYear || "",
+//       pc.revisionStatus || "",
+
+//       "",
+//       "",
+//       "",
+//       "",
+//       "",
+//       ""
+//     ]);
+
+//     // File Links
+//     const files = [
+//       { col: 15, folder: "pc", file: pc.PCdocument },
+//       { col: 16, folder: "pc", file: pc.coursesUpload },
+//       { col: 17, folder: "pc", file: pc.minutesMeeting },
+//       { col: 18, folder: "pc", file: pc.summaryRevision },
+//       { col: 19, folder: "pc", file: pc.newCoursesFile },
+//       { col: 20, folder: "pc", file: pc.employabilityUpload }
+//     ];
+
+//     files.forEach((item) => {
+//       if (item.file) {
+//         const fileLink = makeDownloadLink(
+//           req,
+//           item.folder,
+//           item.file,
+//           createDownloadToken
+//         );
+
+//         row.getCell(item.col).value = {
+//           text: "Download",
+//           hyperlink: fileLink
+//         };
+
+//         row.getCell(item.col).font = {
+//           color: { argb: "0000FF" },
+//           underline: true
+//         };
+//       }
+//     });
+//   });
+
+//   // Column Widths
+//   pcSheet.columns = [
+//     { width: 16 }, // Academic Year
+//     { width: 18 }, // Programme Code
+//     { width: 15 }, // Program ID
+//     { width: 12 }, // Semester
+//     { width: 18 }, // Year Of Intro
+//     { width: 24 }, // School Name
+//     { width: 22 }, // Coordinator Name
+//     { width: 16 }, // Department
+//     { width: 28 }, // Email
+//     { width: 18 }, // Contact
+//     { width: 24 }, // Programme Name
+//     { width: 14 }, // CBCS Status
+//     { width: 14 }, // CBCS Year
+//     { width: 16 }, // Revision Status
+//     { width: 18 }, // PC Doc
+//     { width: 18 }, // Courses
+//     { width: 18 }, // Minutes
+//     { width: 18 }, // Summary
+//     { width: 18 }, // New Course
+//     { width: 20 }  // Employability
+//   ];
+
+//   // Border + Alignment
+//   pcSheet.eachRow((row) => {
+//     row.eachCell((cell) => {
+//       cell.alignment = {
+//         vertical: "middle",
+//         horizontal: "center",
+//         wrapText: true
+//       };
+
+//       cell.border = {
+//         top: { style: "thin" },
+//         left: { style: "thin" },
+//         bottom: { style: "thin" },
+//         right: { style: "thin" }
+//       };
+//     });
+//   });
+// }
+   
+   // =========================
+   // ✅ E-CONTENT SHEET WITH DOWNLOAD LINK
+   // =========================
+  if (!econtentData.length) {
+  const sheet = workbook.addWorksheet("econtent");
+  sheet.addRow(["No data found"]);
+} else {
+  const eSheet = workbook.addWorksheet("E-Content");
+
+  eSheet.addRow(["Annexure - E-Content Report"]);
+  eSheet.mergeCells("A1:H1");
+
+  eSheet.addRow([]);
+
+  eSheet.addRow([
+    "Faculty",
+    "Module Name",
+    "Platform",
+    "Date Of Launch",
+    "Link",
+    "Program ID",
+    "Created At",
+    "Download File"
+  ]);
+
+  econtentData.forEach((item) => {
+    const fileLink = makeDownloadLink(
+      req,
+      "econtent",
+      item.uploadedFile,
+      createDownloadToken
+    );
+
+    const row = eSheet.addRow([
+      item.faculty || "",
+      item.moduleName || "",
+      item.platform || "",
+      item.dateOfLaunch || "",
+      item.link || "",
+      item.program_Id || "",
+      item.createdAt
+        ? new Date(item.createdAt).toLocaleString()
+        : "",
+      ""
+    ]);
+
+    // clickable uploaded file link
+    if (item.uploadedFile) {
+      row.getCell(8).value = {
+        text: "Download",
+        hyperlink: fileLink
+      };
     }
+
+    // clickable external module link
+    if (item.link) {
+      row.getCell(5).value = {
+        text: item.link,
+        hyperlink: item.link
+      };
+    }
+  });
+
+  // column width
+  eSheet.columns = [
+    { width: 20 },
+    { width: 30 },
+    { width: 18 },
+    { width: 18 },
+    { width: 35 },
+    { width: 18 },
+    { width: 22 },
+    { width: 18 }
+  ];
+}
 
     // =========================
     // ✅ GENERIC SHEETS
@@ -1103,7 +1304,7 @@ export const downloadConsolidatedExcel = async (req, res) => {
     };
 
     createSheet("Library", libraryData);
-    createSheet("E-Content", econtentData);
+    // createSheet("E-Content", econtentData);
     createSheet("Capacity", capacityData);
     createSheet("Teaching", teachingData);
     createSheet("Experiential", experientialData);
@@ -1132,67 +1333,43 @@ export const downloadConsolidatedExcel = async (req, res) => {
 
 export const downloadCertificateFile = async (req, res) => {
   try {
-    const formType = String(req.params.formType || "").toLowerCase();
-    const rawFileName = decodeURIComponent(req.params.fileName || "");
-    const safeFileName = path.basename(rawFileName);
-    const token = String(req.query.token || "");
+    const formType = req.params.formType.toLowerCase();
+    const fileName = path.basename(req.params.fileName);
+    const token = req.query.token || "";
 
-    if (!safeFileName) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing file name" });
-    }
+    const isAuthorized = req.user;
+    const isValidToken = verifyDownloadToken(
+      token,
+      formType,
+      fileName
+    );
 
-    if (safeFileName !== rawFileName) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid file name" });
-    }
-
-    const candidateDirs = CERTIFICATE_DIRS[formType];
-    if (!candidateDirs) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid form type" });
-    }
-
-    // Allow either logged-in request (browser app) OR valid signed link (Excel/opened externally).
-    const isAuthorizedUser = Boolean(req.user);
-    const isValidSignedLink = token
-      ? verifyCertificateDownloadToken(token, formType, safeFileName)
-      : false;
-
-    if (!isAuthorizedUser && !isValidSignedLink) {
+    if (!isAuthorized && !isValidToken) {
       return res.status(401).json({
         success: false,
-        message: "Access denied. Please login first.",
+        message: "Unauthorized"
       });
     }
 
-    let filePath = null;
-    for (const dir of candidateDirs) {
-      const candidatePath = path.join(dir, safeFileName);
-      if (candidatePath.startsWith(dir) && fs.existsSync(candidatePath)) {
-        filePath = candidatePath;
-        break;
-      }
-    }
+    const filePath = findFile(formType, fileName);
 
     if (!filePath) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Certificate file not found" });
+     return res.status(404).send(`
+        <h3>File Not Found</h3>
+        <p>The requested document "${fileName}" is not available on the server.</p>
+        <p>Please contact administrator or re-upload the file.</p>
+      `);
     }
+    return res.download(filePath, fileName);
 
-    return res.download(filePath, safeFileName);
   } catch (err) {
-    console.error("Certificate download error:", err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to download certificate" });
+    console.error(err);
+   return res.status(500).send(`
+      <h3>Download Failed</h3>
+      <p>Something went wrong while downloading the file.</p>
+    `);
   }
 };
-
 // Helper function to generate CSV
 function generateCSV(data) {
   if (!Array.isArray(data) || data.length === 0) return "";

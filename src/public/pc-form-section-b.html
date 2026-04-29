@@ -794,10 +794,10 @@
       });
 
       // ── Generate CSV ──
-      /* const csvData = buildCSV(aData, bData);
+      const csvData = buildCSV(aData, bData);
       const blob    = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
       csvBlobUrl    = URL.createObjectURL(blob);
-      triggerDownload(csvBlobUrl, "programme_coordinator_data.csv"); */
+      triggerDownload(csvBlobUrl, "programme_coordinator_data.csv");
 
       // ── Optional: send to API ──
       const token = localStorage.getItem("token");
@@ -808,16 +808,16 @@
           if (inp.type === "file") {
             if (inp.files[0]) formData.append(inp.name, inp.files[0]);
           } else {
-            formData.append(inp.name, inp.value.trim());
+            formData.append("sectionA_" + inp.name, inp.value.trim());
           }
         });
         // Section B
         document.getElementById("pcFormB").querySelectorAll("input[type='file']").forEach(inp => {
           if (inp.files[0]) formData.append(inp.name, inp.files[0]);
         });
-        formData.append("cbcsStatus", bData.cbcsStatus);
-        formData.append("cbcsYear",   bData.cbcsYear);
-        formData.append("revisionStatus", bData.revisionStatus);
+        formData.append("sectionB_cbcsStatus", bData.cbcsStatus);
+        formData.append("sectionB_cbcsYear",   bData.cbcsYear);
+        formData.append("sectionB_revisionStatus", bData.revisionStatus);
 
         fetch("/api/pc/submit", {
           method: "POST",
@@ -845,7 +845,7 @@
   });
 
   /* ── CSV builder ── */
- /*function buildCSV(aData, bData) {
+ function buildCSV(aData, bData) {
     const rows = [];
 
     // Header row
@@ -889,14 +889,14 @@
   }
 
   /* ── CSV download trigger ── */
-  /*function triggerDownload(url, filename) {
+  function triggerDownload(url, filename) {
     const a = document.createElement("a");
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
-  } */
+  } 
 
   /* ── Template download (needs backend) ── */
   async function downloadTemplate(fileName) {

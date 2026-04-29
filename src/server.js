@@ -18,6 +18,7 @@ import { errorHandler, notFoundHandler } from "./middleware/index.js";
 import registerRoutes from "./routes/register.js";
 import facultyRoutes from "./routes/faculty.js";
 import consolidatedReportRoutes from "./routes/consolidated-report.js";
+import templateRoutes from "./routes/templateRoutes.js";
 
 
 
@@ -68,6 +69,7 @@ app.use("/api/library",  libraryRoutes);
 app.use("/api/learner-support",  learnerRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/consolidated-report", consolidatedReportRoutes);
+app.use("/api/templates", templateRoutes);
 
 
 

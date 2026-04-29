@@ -311,6 +311,10 @@
             <label>Program ID (Optional)</label>
             <input type="text" name="program_Id">
           </div>
+          <div class="input-group full-width">
+            <label>Upload file</label>
+           <input type="file"  id = "e-contentFile" name="uploadedFile" accept=".pdf,.csv,.xlsx,.xls"/>
+          </div>
         </div>
 
         <button class="submit-btn">Submit Programme Details</button>
@@ -349,15 +353,22 @@
 
       const inputs = form.querySelectorAll("input");
       let valid = true;
-      const payload = {};
+      const formData = new FormData();
 
       inputs.forEach((i) => {
         i.classList.remove("error");
-        if (!i.value && i.name !== "program_Id") {
+        if (!i.value && i.name !== "program_Id" && i.type !== "file") {
           valid = false;
           i.classList.add("error");
         }
-        payload[i.name] = i.value.trim();
+       
+        if (i.type === "file") {
+          if (i.files.length > 0) {
+            formData.append("uploadedFile", i.files[0]);
+          }
+        } else {
+          formData.append(i.name, i.value.trim());
+        }
       });
 
       if (!valid) {
@@ -373,12 +384,11 @@
 
       try {
         const res = await fetch("/api/econtent/submit", {
-          method: "POST",
+         method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token,
+            Authorization: "Bearer " + token
           },
-          body: JSON.stringify(payload),
+          body: formData
         });
 
         const data = await res.json();
